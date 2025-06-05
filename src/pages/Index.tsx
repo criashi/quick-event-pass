@@ -25,30 +25,35 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver flex items-center justify-center font-continental">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg text-gray-600">Loading event data...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-continental-yellow mx-auto mb-4" />
+          <p className="text-lg text-continental-gray1 font-medium">Loading event data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver font-continental">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with User Info */}
+        {/* Header with Continental Branding */}
         <div className="flex justify-between items-start mb-8">
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
-                <QrCode className="h-8 w-8 text-white" />
+              <div className="p-3 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10">
+                <img 
+                  src="/lovable-uploads/7db59a9c-fbb6-4e19-951e-7a41b8ae2800.png" 
+                  alt="Continental Logo" 
+                  className="h-8 w-8 object-contain"
+                />
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Continental Event Check-In
+              <h1 className="text-4xl font-bold text-continental-black">
+                Continental Events
               </h1>
             </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <div className="w-20 h-1 bg-continental-yellow mx-auto mb-4"></div>
+            <p className="text-lg text-continental-gray1 font-medium max-w-2xl mx-auto">
               Employee event registration and check-in management system
             </p>
           </div>
@@ -56,10 +61,10 @@ const Index = () => {
           {/* User Menu */}
           <div className="flex items-center gap-2 ml-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-continental-gray1">
                 {profile?.full_name || user?.email}
               </p>
-              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
+              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs bg-continental-yellow text-continental-black">
                 {profile?.role}
               </Badge>
             </div>
@@ -67,7 +72,7 @@ const Index = () => {
               variant="outline"
               size="icon"
               onClick={signOut}
-              className="ml-2"
+              className="ml-2 border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
@@ -75,76 +80,76 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview with Continental Colors */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-continental-dark-blue to-continental-light-blue text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm font-medium">Total Registered</p>
+                  <p className="text-continental-white/80 text-sm font-medium">Total Registered</p>
                   <p className="text-3xl font-bold">{stats.total}</p>
                 </div>
-                <Users className="h-8 w-8 text-blue-200" />
+                <Users className="h-8 w-8 text-continental-white/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-continental-dark-green to-continental-light-green text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm font-medium">Checked In</p>
+                  <p className="text-continental-white/80 text-sm font-medium">Checked In</p>
                   <p className="text-3xl font-bold">{stats.checkedIn}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-200" />
+                <CheckCircle className="h-8 w-8 text-continental-white/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-continental-yellow to-continental-yellow/80 text-continental-black border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm font-medium">Pending</p>
+                  <p className="text-continental-black/70 text-sm font-medium">Pending</p>
                   <p className="text-3xl font-bold">{stats.pending}</p>
                 </div>
-                <Clock className="h-8 w-8 text-orange-200" />
+                <Clock className="h-8 w-8 text-continental-black/60" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-continental-gray1 to-continental-gray2 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm font-medium">Check-in Rate</p>
+                  <p className="text-continental-white/80 text-sm font-medium">Check-in Rate</p>
                   <p className="text-3xl font-bold">{stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0}%</p>
                 </div>
-                <QrCode className="h-8 w-8 text-purple-200" />
+                <QrCode className="h-8 w-8 text-continental-white/70" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
+        {/* Main Content with Continental Styling */}
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-white shadow-md border border-gray-200">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-6 bg-continental-white shadow-md border border-continental-gray3">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="scanner" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="scanner" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
               QR Scanner
             </TabsTrigger>
-            <TabsTrigger value="attendees" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="attendees" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
               Attendees
             </TabsTrigger>
-            <TabsTrigger value="qr-sender" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="qr-sender" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
               Send QR Codes
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="settings" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
               Settings
             </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
               <User className="h-4 w-4 mr-1" />
               Profile
             </TabsTrigger>
@@ -167,23 +172,23 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="settings">
-            <Card className="shadow-lg border-0">
+            <Card className="shadow-lg border-0 bg-continental-white">
               <CardHeader>
-                <CardTitle className="text-2xl text-gray-800">System Settings</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-2xl text-continental-black">System Settings</CardTitle>
+                <CardDescription className="text-continental-gray1">
                   Configure your event check-in system and import attendee data
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <CSVImport onImportComplete={refreshData} />
                 
-                <div className="border-t pt-6">
+                <div className="border-t border-continental-gray3 pt-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Database Status</h3>
+                    <h3 className="text-lg font-semibold text-continental-black">Database Status</h3>
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Status: <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge></p>
-                      <p className="text-sm text-gray-600">Provider: Supabase</p>
-                      <p className="text-sm text-gray-600">Total Records: {stats.total}</p>
+                      <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
+                      <p className="text-sm text-continental-gray1">Provider: Supabase</p>
+                      <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
                     </div>
                   </div>
                 </div>
