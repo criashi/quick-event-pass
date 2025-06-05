@@ -9,54 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      attendees: {
-        Row: {
-          check_in_time: string | null
-          checked_in: boolean
-          created_at: string
-          department: string | null
-          email: string
-          first_name: string
-          food_allergies: string | null
-          id: string
-          last_name: string
-          qr_code_sent: boolean
-          qr_code_sent_at: string | null
-          registration_time: string
-          updated_at: string
-        }
-        Insert: {
-          check_in_time?: string | null
-          checked_in?: boolean
-          created_at?: string
-          department?: string | null
-          email: string
-          first_name: string
-          food_allergies?: string | null
-          id?: string
-          last_name: string
-          qr_code_sent?: boolean
-          qr_code_sent_at?: string | null
-          registration_time?: string
-          updated_at?: string
-        }
-        Update: {
-          check_in_time?: string | null
-          checked_in?: boolean
-          created_at?: string
-          department?: string | null
-          email?: string
-          first_name?: string
-          food_allergies?: string | null
-          id?: string
-          last_name?: string
-          qr_code_sent?: boolean
-          qr_code_sent_at?: string | null
-          registration_time?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
