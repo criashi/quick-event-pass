@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
 import SignUpForm from '@/components/auth/SignUpForm';
-import { Loader2, Car } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const Auth: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -35,7 +35,11 @@ const Auth: React.FC = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="p-4 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10">
-              <Car className="h-10 w-10 text-continental-black" />
+              <img 
+                src="/lovable-uploads/7db59a9c-fbb6-4e19-951e-7a41b8ae2800.png" 
+                alt="Continental Logo" 
+                className="h-10 w-10 object-contain"
+              />
             </div>
           </div>
           <h1 className="text-4xl font-bold text-continental-black mb-2">
