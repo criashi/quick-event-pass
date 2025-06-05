@@ -19,6 +19,15 @@ interface ImportResult {
   errors: string[];
 }
 
+interface ValidatedAttendee {
+  full_name: string;
+  continental_email: string;
+  employee_number?: string;
+  business_area?: string;
+  vegetarian_vegan_option?: string;
+  checked_in: boolean;
+}
+
 const CSVImport = ({ onImportComplete }: CSVImportProps) => {
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -42,7 +51,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
     });
   };
 
-  const normalizeAttendeeData = (csvRow: any): Partial<Attendee> => {
+  const normalizeAttendeeData = (csvRow: any): ValidatedAttendee | null => {
     // Map common CSV column names to our attendee structure
     const mapping: Record<string, string> = {
       'Name': 'full_name',
@@ -61,7 +70,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       'vegetarian_vegan_option': 'vegetarian_vegan_option',
     };
 
-    const normalized: Partial<Attendee> = {
+    const normalized: Partial<ValidatedAttendee> = {
       checked_in: false,
     };
 
@@ -73,7 +82,19 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       }
     });
 
-    return normalized;
+    // Validate required fields
+    if (!normalized.full_name || !normalized.continental_email) {
+      return null;
+    }
+
+    return {
+      full_name: normalized.full_name,
+      continental_email: normalized.continental_email,
+      employee_number: normalized.employee_number,
+      business_area: normalized.business_area,
+      vegetarian_vegan_option: normalized.vegetarian_vegan_option,
+      checked_in: false,
+    };
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,8 +151,8 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
         try {
           const attendee = normalizeAttendeeData(row);
 
-          // Validate required fields
-          if (!attendee.full_name || !attendee.continental_email) {
+          // Check if validation failed
+          if (!attendee) {
             result.errors.push(`Missing required fields for row: ${JSON.stringify(row)}`);
             continue;
           }
