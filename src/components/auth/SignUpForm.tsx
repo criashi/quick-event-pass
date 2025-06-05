@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SignUpFormProps {
@@ -20,6 +19,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onToggleMode }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
   const { signUp } = useAuth();
   const { toast } = useToast();
 
@@ -63,14 +63,55 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onToggleMode }) => {
     const { error } = await signUp(email, password, fullName);
 
     if (!error) {
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setFullName('');
+      setSignUpSuccess(true);
+      toast({
+        title: "Account Created Successfully!",
+        description: "Please check your email to confirm your account, then you can sign in.",
+      });
     }
 
     setLoading(false);
   };
+
+  const handleReturnToLogin = () => {
+    setSignUpSuccess(false);
+    onToggleMode();
+  };
+
+  if (signUpSuccess) {
+    return (
+      <Card className="w-full max-w-md mx-auto bg-continental-white border-continental-silver shadow-xl font-continental">
+        <CardHeader className="bg-gradient-to-r from-continental-black to-continental-gray1 text-continental-white rounded-t-lg">
+          <CardTitle className="text-2xl text-center font-bold">Account Created!</CardTitle>
+          <CardDescription className="text-center text-continental-gray4">
+            Check your email to confirm your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 text-center">
+          <div className="mb-6">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-continental-black mb-2">
+              Registration Successful!
+            </h3>
+            <p className="text-continental-gray2 mb-4">
+              We've sent a confirmation email to <strong>{email}</strong>
+            </p>
+            <p className="text-sm text-continental-gray2">
+              Please check your inbox (and spam folder) for the confirmation email. 
+              Once confirmed, you can sign in to access the system.
+            </p>
+          </div>
+          
+          <Button 
+            onClick={handleReturnToLogin}
+            className="w-full bg-continental-yellow hover:bg-continental-yellow/90 text-continental-black font-bold border-2 border-continental-black/10 transition-all duration-200 hover:shadow-lg"
+          >
+            Return to Sign In
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto bg-continental-white border-continental-silver shadow-xl font-continental">
