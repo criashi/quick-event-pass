@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Attendee, EventStats } from "@/types/attendee";
@@ -39,8 +38,60 @@ export const useSupabaseEventData = () => {
     }
   };
 
+  const fixBadRecord = async () => {
+    try {
+      // Find and fix the specific record with business_area = "60014570"
+      const { data: badRecord, error: fetchError } = await supabase
+        .from('attendees')
+        .select('id, business_area, employee_number, full_name')
+        .eq('business_area', '60014570')
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Error fetching bad record:', fetchError);
+        return;
+      }
+
+      if (badRecord) {
+        const updates: any = {
+          business_area: null, // Clear the invalid business area
+        };
+
+        // If employee_number is empty, move the business_area value there
+        if (!badRecord.employee_number) {
+          updates.employee_number = badRecord.business_area;
+        }
+
+        const { error: updateError } = await supabase
+          .from('attendees')
+          .update(updates)
+          .eq('id', badRecord.id);
+
+        if (updateError) {
+          console.error('Error updating bad record:', updateError);
+        } else {
+          console.log(`Fixed record for ${badRecord.full_name}: moved ${badRecord.business_area} from business_area to employee_number`);
+          toast({
+            title: "Record Fixed",
+            description: `Fixed business area data for ${badRecord.full_name}`,
+          });
+          // Refresh data after fix
+          await fetchAttendees();
+        }
+      }
+    } catch (error) {
+      console.error('Error fixing bad record:', error);
+    }
+  };
+
   useEffect(() => {
-    fetchAttendees();
+    const initializeData = async () => {
+      await fetchAttendees();
+      // Automatically fix the bad record on component mount
+      await fixBadRecord();
+    };
+    
+    initializeData();
   }, []);
 
   const checkInAttendee = async (attendeeId: string): Promise<boolean> => {
