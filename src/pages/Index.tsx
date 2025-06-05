@@ -9,6 +9,7 @@ import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
 import CSVImport from "@/components/CSVImport";
 import UserProfile from "@/components/auth/UserProfile";
+import QRCodeSender from "@/components/QRCodeSender";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -127,7 +128,7 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white shadow-md border border-gray-200">
+          <TabsList className="grid w-full grid-cols-6 bg-white shadow-md border border-gray-200">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Dashboard
             </TabsTrigger>
@@ -136,6 +137,9 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="attendees" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Attendees
+            </TabsTrigger>
+            <TabsTrigger value="qr-sender" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Send QR Codes
             </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Settings
@@ -156,6 +160,10 @@ const Index = () => {
 
           <TabsContent value="attendees">
             <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} />
+          </TabsContent>
+
+          <TabsContent value="qr-sender">
+            <QRCodeSender attendees={attendees} onRefresh={refreshData} />
           </TabsContent>
 
           <TabsContent value="settings">
