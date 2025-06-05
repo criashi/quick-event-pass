@@ -54,6 +54,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
   const normalizeAttendeeData = (csvRow: any): ValidatedAttendee | null => {
     // Map common CSV column names to our attendee structure
     const mapping: Record<string, string> = {
+      // Standard formats
       'Name': 'full_name',
       'Full Name': 'full_name',
       'name': 'full_name',
@@ -68,6 +69,14 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       'business_area': 'business_area',
       'Vegetarian/Vegan Option': 'vegetarian_vegan_option',
       'vegetarian_vegan_option': 'vegetarian_vegan_option',
+      
+      // Microsoft Forms specific column names
+      'Your Name (first and last)�': 'full_name',
+      'Your Name (first and last)': 'full_name',
+      'Please write your Continental email address:': 'continental_email',
+      'Employee Number (e.g. 60001234)': 'employee_number',
+      'Please Select Business Area': 'business_area',
+      'Do you require a vegetarian or vegan food option?': 'vegetarian_vegan_option',
     };
 
     const normalized: Partial<ValidatedAttendee> = {
@@ -76,8 +85,8 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
 
     // Map CSV fields to our structure
     Object.entries(csvRow).forEach(([key, value]) => {
-      const mappedKey = mapping[key] || key.toLowerCase().replace(/\s+/g, '_');
-      if (value && typeof value === 'string') {
+      const mappedKey = mapping[key];
+      if (mappedKey && value && typeof value === 'string') {
         (normalized as any)[mappedKey] = value.trim();
       }
     });
@@ -270,6 +279,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
                 <li>• Required columns: Name (or Full Name), Email (or Continental Email)</li>
                 <li>• Optional columns: Employee Number, Business Area, Vegetarian/Vegan Option</li>
                 <li>• First row should contain column headers</li>
+                <li>• Supports Microsoft Forms exports with long column names</li>
                 <li>• Duplicate entries (same email or name) will be skipped</li>
               </ul>
             </div>
