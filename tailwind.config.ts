@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,26 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Continental Brand Colors
+				continental: {
+					yellow: '#ffa500',
+					black: '#000000',
+					white: '#ffffff',
+					silver: '#cdcdcd',
+					gray1: '#737373',
+					gray2: '#969696',
+					gray3: '#cdcdcd',
+					gray4: '#f0f0f0',
+					'light-blue': '#00a5dc',
+					'dark-blue': '#004eaf',
+					'light-green': '#2db928',
+					'dark-green': '#057855',
+					'light-red': '#ff2d37'
 				}
+			},
+			fontFamily: {
+				'continental': ['Stag Sans', 'Arial', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
