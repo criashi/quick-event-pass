@@ -51,6 +51,23 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
     });
   };
 
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const isValidEmployeeNumber = (empNum: string): boolean => {
+    // Employee numbers should be numeric and typically 8-9 digits for Continental
+    const cleanNum = empNum.replace(/\D/g, '');
+    return cleanNum.length >= 6 && cleanNum.length <= 10;
+  };
+
+  const isValidBusinessArea = (area: string): boolean => {
+    // Business areas should not be purely numeric
+    const numericPattern = /^\d+$/;
+    return !numericPattern.test(area.trim()) && area.length > 2;
+  };
+
   const normalizeAttendeeData = (csvRow: any): ValidatedAttendee | null => {
     // Map common CSV column names to our attendee structure
     const mapping: Record<string, string> = {
@@ -96,6 +113,26 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       return null;
     }
 
+    // Validate email format
+    if (!isValidEmail(normalized.continental_email)) {
+      console.warn(`Invalid email format: ${normalized.continental_email}`);
+      return null;
+    }
+
+    // Validate and clean employee number
+    if (normalized.employee_number && !isValidEmployeeNumber(normalized.employee_number)) {
+      console.warn(`Invalid employee number: ${normalized.employee_number}`);
+      // Set to undefined rather than rejecting the whole record
+      normalized.employee_number = undefined;
+    }
+
+    // Validate business area
+    if (normalized.business_area && !isValidBusinessArea(normalized.business_area)) {
+      console.warn(`Invalid business area (appears to be numeric): ${normalized.business_area}`);
+      // Set to undefined rather than rejecting the whole record
+      normalized.business_area = undefined;
+    }
+
     return {
       full_name: normalized.full_name,
       continental_email: normalized.continental_email,
@@ -104,6 +141,56 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       vegetarian_vegan_option: normalized.vegetarian_vegan_option,
       checked_in: false,
     };
+  };
+
+  const cleanupExistingData = async () => {
+    try {
+      // Find and fix records where business_area is numeric (employee numbers)
+      const { data: badRecords, error: fetchError } = await supabase
+        .from('attendees')
+        .select('id, business_area, employee_number')
+        .not('business_area', 'is', null);
+
+      if (fetchError) {
+        console.error('Error fetching records for cleanup:', fetchError);
+        return;
+      }
+
+      const recordsToFix = badRecords?.filter(record => 
+        record.business_area && /^\d+$/.test(record.business_area)
+      ) || [];
+
+      for (const record of recordsToFix) {
+        const updates: any = {
+          business_area: null, // Clear the invalid business area
+        };
+
+        // If employee_number is empty and business_area looks like an employee number, move it
+        if (!record.employee_number && isValidEmployeeNumber(record.business_area)) {
+          updates.employee_number = record.business_area;
+        }
+
+        const { error: updateError } = await supabase
+          .from('attendees')
+          .update(updates)
+          .eq('id', record.id);
+
+        if (updateError) {
+          console.error(`Error updating record ${record.id}:`, updateError);
+        } else {
+          console.log(`Fixed record ${record.id}: moved ${record.business_area} from business_area to employee_number`);
+        }
+      }
+
+      if (recordsToFix.length > 0) {
+        toast({
+          title: "Data Cleanup",
+          description: `Fixed ${recordsToFix.length} records with invalid business area data`,
+        });
+      }
+    } catch (error) {
+      console.error('Error during data cleanup:', error);
+    }
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,6 +210,9 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
     setImportResult(null);
 
     try {
+      // First, clean up any existing bad data
+      await cleanupExistingData();
+
       const csvText = await file.text();
       const csvData = parseCSV(csvText);
 
@@ -162,7 +252,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
 
           // Check if validation failed
           if (!attendee) {
-            result.errors.push(`Missing required fields for row: ${JSON.stringify(row)}`);
+            result.errors.push(`Invalid or missing required fields for: ${attendee?.full_name || 'Unknown'}`);
             continue;
           }
 
@@ -280,6 +370,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
                 <li>• Optional columns: Employee Number, Business Area, Vegetarian/Vegan Option</li>
                 <li>• First row should contain column headers</li>
                 <li>• Supports Microsoft Forms exports with long column names</li>
+                <li>• Data validation prevents malformed records</li>
                 <li>• Duplicate entries (same email or name) will be skipped</li>
               </ul>
             </div>
