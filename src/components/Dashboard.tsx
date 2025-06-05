@@ -16,22 +16,22 @@ interface DashboardProps {
 
 const Dashboard = ({ attendees, stats }: DashboardProps) => {
   const recentCheckIns = attendees
-    .filter(a => a.checkedIn && a.checkInTime)
-    .sort((a, b) => new Date(b.checkInTime!).getTime() - new Date(a.checkInTime!).getTime())
+    .filter(a => a.checked_in && a.check_in_time)
+    .sort((a, b) => new Date(b.check_in_time!).getTime() - new Date(a.check_in_time!).getTime())
     .slice(0, 5);
 
   const downloadCSV = () => {
-    const headers = ['First Name', 'Last Name', 'Email', 'Department', 'Food Allergies', 'Status', 'Check-in Time'];
+    const headers = ['Full Name', 'Continental Email', 'Employee Number', 'Business Area', 'Vegetarian/Vegan Option', 'Status', 'Check-in Time'];
     const csvContent = [
       headers.join(','),
       ...attendees.map(attendee => [
-        attendee.firstName,
-        attendee.lastName,
-        attendee.email,
-        attendee.department,
-        attendee.foodAllergies || 'None',
-        attendee.checkedIn ? 'Checked In' : 'Pending',
-        attendee.checkInTime || 'N/A'
+        `"${attendee.full_name}"`,
+        attendee.continental_email,
+        attendee.employee_number || 'N/A',
+        `"${attendee.business_area || 'N/A'}"`,
+        attendee.vegetarian_vegan_option || 'No',
+        attendee.checked_in ? 'Checked In' : 'Pending',
+        attendee.check_in_time ? new Date(attendee.check_in_time).toLocaleString() : 'N/A'
       ].join(','))
     ].join('\n');
 
@@ -40,7 +40,7 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
     const a = document.createElement('a');
     a.setAttribute('hidden', '');
     a.setAttribute('href', url);
-    a.setAttribute('download', `event-attendees-${new Date().toISOString().split('T')[0]}.csv`);
+    a.setAttribute('download', `continental-event-attendees-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -54,7 +54,7 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl text-gray-800">Event Overview</CardTitle>
+                <CardTitle className="text-2xl text-gray-800">Continental Event Overview</CardTitle>
                 <CardDescription>Real-time check-in statistics and progress</CardDescription>
               </div>
               <Button onClick={downloadCSV} className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
@@ -74,7 +74,7 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div 
                     className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${(stats.checkedIn / stats.total) * 100}%` }}
+                    style={{ width: `${stats.total > 0 ? (stats.checkedIn / stats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>
@@ -92,7 +92,7 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
                   <MapPin className="h-5 w-5 text-purple-600" />
                   <div>
                     <p className="font-medium text-gray-800">Location</p>
-                    <p className="text-sm text-gray-600">Conference Center</p>
+                    <p className="text-sm text-gray-600">Continental Headquarters</p>
                   </div>
                 </div>
               </div>
@@ -107,7 +107,7 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
               <TrendingUp className="h-5 w-5 text-green-600" />
               Recent Check-ins
             </CardTitle>
-            <CardDescription>Latest attendee arrivals</CardDescription>
+            <CardDescription>Latest employee arrivals</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -115,15 +115,15 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
                 recentCheckIns.map((attendee) => (
                   <div key={attendee.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-800">{attendee.firstName} {attendee.lastName}</p>
-                      <p className="text-sm text-gray-600">{attendee.department}</p>
+                      <p className="font-medium text-gray-800">{attendee.full_name}</p>
+                      <p className="text-sm text-gray-600">{attendee.business_area}</p>
                     </div>
                     <div className="text-right">
                       <Badge variant="secondary" className="bg-green-100 text-green-800">
                         Checked In
                       </Badge>
                       <p className="text-xs text-gray-500 mt-1">
-                        {new Date(attendee.checkInTime!).toLocaleTimeString()}
+                        {new Date(attendee.check_in_time!).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
@@ -139,29 +139,29 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
         </Card>
       </div>
 
-      {/* Department Breakdown */}
+      {/* Business Area Breakdown */}
       <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle className="text-xl text-gray-800">Department Breakdown</CardTitle>
-          <CardDescription>Check-in status by department</CardDescription>
+          <CardTitle className="text-xl text-gray-800">Business Area Breakdown</CardTitle>
+          <CardDescription>Check-in status by business area</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Object.entries(
               attendees.reduce((acc, attendee) => {
-                const dept = attendee.department;
-                if (!acc[dept]) {
-                  acc[dept] = { total: 0, checkedIn: 0 };
+                const area = attendee.business_area || 'Unknown';
+                if (!acc[area]) {
+                  acc[area] = { total: 0, checkedIn: 0 };
                 }
-                acc[dept].total++;
-                if (attendee.checkedIn) {
-                  acc[dept].checkedIn++;
+                acc[area].total++;
+                if (attendee.checked_in) {
+                  acc[area].checkedIn++;
                 }
                 return acc;
               }, {} as Record<string, { total: number; checkedIn: number }>)
-            ).map(([department, data]) => (
-              <div key={department} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-2">{department}</h3>
+            ).map(([area, data]) => (
+              <div key={area} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">{area}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Progress</span>
@@ -170,11 +170,11 @@ const Dashboard = ({ attendees, stats }: DashboardProps) => {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full"
-                      style={{ width: `${(data.checkedIn / data.total) * 100}%` }}
+                      style={{ width: `${data.total > 0 ? (data.checkedIn / data.total) * 100 : 0}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-600">
-                    {Math.round((data.checkedIn / data.total) * 100)}% checked in
+                    {data.total > 0 ? Math.round((data.checkedIn / data.total) * 100) : 0}% checked in
                   </p>
                 </div>
               </div>

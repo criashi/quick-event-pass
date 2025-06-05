@@ -1,18 +1,27 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { QrCode, Users, CheckCircle, Clock, Download, Search } from "lucide-react";
+import { QrCode, Users, CheckCircle, Clock, Loader2 } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
-import { useEventData } from "@/hooks/useEventData";
+import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 
 const Index = () => {
-  const { attendees, checkInAttendee, getStats } = useEventData();
+  const { attendees, loading, checkInAttendee, getStats } = useSupabaseEventData();
   const stats = getStats();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-lg text-gray-600">Loading event data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -24,11 +33,11 @@ const Index = () => {
               <QrCode className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Event Check-In System
+              Continental Event Check-In
             </h1>
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Streamlined QR code-based attendee management integrated with Microsoft Forms
+            Employee event registration and check-in management system
           </p>
         </div>
 
@@ -75,7 +84,7 @@ const Index = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-purple-100 text-sm font-medium">Check-in Rate</p>
-                  <p className="text-3xl font-bold">{Math.round((stats.checkedIn / stats.total) * 100)}%</p>
+                  <p className="text-3xl font-bold">{stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0}%</p>
                 </div>
                 <QrCode className="h-8 w-8 text-purple-200" />
               </div>
@@ -125,17 +134,17 @@ const Index = () => {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-800">Microsoft Forms Integration</h3>
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Form ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded">form-123-456</span></p>
-                      <p className="text-sm text-gray-600">Last Sync: <span className="text-green-600">2 minutes ago</span></p>
-                      <Button variant="outline" size="sm">Sync Now</Button>
+                      <p className="text-sm text-gray-600">Form ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded">continental-event-form</span></p>
+                      <p className="text-sm text-gray-600">Last Sync: <span className="text-green-600">Connected</span></p>
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Email Settings</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Database</h3>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">Status: <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge></p>
-                      <p className="text-sm text-gray-600">Provider: Microsoft Graph API</p>
-                      <Button variant="outline" size="sm">Test Email</Button>
+                      <p className="text-sm text-gray-600">Provider: Supabase</p>
+                      <p className="text-sm text-gray-600">Total Records: {stats.total}</p>
                     </div>
                   </div>
                 </div>

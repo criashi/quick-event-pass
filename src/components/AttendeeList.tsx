@@ -5,36 +5,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, CheckCircle, Clock, Mail, AlertTriangle } from "lucide-react";
+import { Search, Filter, CheckCircle, Clock, Mail, AlertTriangle, Building } from "lucide-react";
 import { Attendee } from "@/types/attendee";
 
 interface AttendeeListProps {
   attendees: Attendee[];
-  onCheckIn: (attendeeId: string) => boolean;
+  onCheckIn: (attendeeId: string) => Promise<boolean>;
 }
 
 const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [filterDepartment, setFilterDepartment] = useState("all");
+  const [filterBusinessArea, setFilterBusinessArea] = useState("all");
 
-  const departments = [...new Set(attendees.map(a => a.department))];
+  const businessAreas = [...new Set(attendees.map(a => a.business_area).filter(Boolean))];
 
   const filteredAttendees = attendees.filter(attendee => {
     const matchesSearch = 
-      attendee.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      attendee.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      attendee.email.toLowerCase().includes(searchTerm.toLowerCase());
+      attendee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      attendee.continental_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (attendee.employee_number && attendee.employee_number.includes(searchTerm));
     
     const matchesStatus = 
       filterStatus === "all" ||
-      (filterStatus === "checked-in" && attendee.checkedIn) ||
-      (filterStatus === "pending" && !attendee.checkedIn);
+      (filterStatus === "checked-in" && attendee.checked_in) ||
+      (filterStatus === "pending" && !attendee.checked_in);
     
-    const matchesDepartment = 
-      filterDepartment === "all" || attendee.department === filterDepartment;
+    const matchesBusinessArea = 
+      filterBusinessArea === "all" || attendee.business_area === filterBusinessArea;
 
-    return matchesSearch && matchesStatus && matchesDepartment;
+    return matchesSearch && matchesStatus && matchesBusinessArea;
   });
 
   return (
@@ -42,7 +42,7 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
       {/* Filters */}
       <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle className="text-2xl text-gray-800">Attendee Management</CardTitle>
+          <CardTitle className="text-2xl text-gray-800">Continental Employee Management</CardTitle>
           <CardDescription>
             Search and filter event attendees, view check-in status
           </CardDescription>
@@ -52,7 +52,7 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search by name or email..."
+                placeholder="Search by name, email, or employee number..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -68,26 +68,26 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
                 <SelectItem value="pending">Pending</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterDepartment} onValueChange={setFilterDepartment}>
+            <Select value={filterBusinessArea} onValueChange={setFilterBusinessArea}>
               <SelectTrigger className="md:w-48">
-                <SelectValue placeholder="Filter by department" />
+                <SelectValue placeholder="Filter by business area" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {departments.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                <SelectItem value="all">All Business Areas</SelectItem>
+                {businessAreas.map(area => (
+                  <SelectItem key={area} value={area!}>{area}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           
           <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
-            <span>Showing {filteredAttendees.length} of {attendees.length} attendees</span>
+            <span>Showing {filteredAttendees.length} of {attendees.length} employees</span>
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
               <span>Active filters: {[
                 filterStatus !== "all" && filterStatus,
-                filterDepartment !== "all" && filterDepartment,
+                filterBusinessArea !== "all" && filterBusinessArea,
                 searchTerm && "search"
               ].filter(Boolean).join(", ") || "none"}</span>
             </div>
@@ -105,18 +105,24 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-800">
-                        {attendee.firstName} {attendee.lastName}
+                        {attendee.full_name}
                       </h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                         <Mail className="h-4 w-4" />
-                        <span>{attendee.email}</span>
+                        <span>{attendee.continental_email}</span>
                       </div>
+                      {attendee.employee_number && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Building className="h-4 w-4" />
+                          <span>Employee #: {attendee.employee_number}</span>
+                        </div>
+                      )}
                     </div>
                     <Badge 
                       variant="secondary" 
-                      className={attendee.checkedIn ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}
+                      className={attendee.checked_in ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}
                     >
-                      {attendee.checkedIn ? (
+                      {attendee.checked_in ? (
                         <div className="flex items-center gap-1">
                           <CheckCircle className="h-3 w-3" />
                           Checked In
@@ -132,34 +138,36 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span className="font-medium text-gray-700">Department:</span>
-                      <p className="text-gray-600">{attendee.department}</p>
+                      <span className="font-medium text-gray-700">Business Area:</span>
+                      <p className="text-gray-600">{attendee.business_area || 'Not specified'}</p>
                     </div>
                     <div>
                       <span className="font-medium text-gray-700">Registration:</span>
-                      <p className="text-gray-600">{new Date(attendee.registrationTime).toLocaleDateString()}</p>
+                      <p className="text-gray-600">
+                        {attendee.start_time ? new Date(attendee.start_time).toLocaleDateString() : 'N/A'}
+                      </p>
                     </div>
-                    {attendee.checkedIn && attendee.checkInTime && (
+                    {attendee.checked_in && attendee.check_in_time && (
                       <div>
                         <span className="font-medium text-gray-700">Check-in Time:</span>
-                        <p className="text-gray-600">{new Date(attendee.checkInTime).toLocaleString()}</p>
+                        <p className="text-gray-600">{new Date(attendee.check_in_time).toLocaleString()}</p>
                       </div>
                     )}
                   </div>
 
-                  {attendee.foodAllergies && (
-                    <div className="mt-3 p-3 bg-yellow-50 rounded-lg flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  {attendee.vegetarian_vegan_option === 'Yes' && (
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-yellow-800">Food Allergies</p>
-                        <p className="text-yellow-700 text-sm">{attendee.foodAllergies}</p>
+                        <p className="font-medium text-green-800">Dietary Requirements</p>
+                        <p className="text-green-700 text-sm">Vegetarian/Vegan option required</p>
                       </div>
                     </div>
                   )}
                 </div>
 
                 <div className="ml-6">
-                  {!attendee.checkedIn ? (
+                  {!attendee.checked_in ? (
                     <Button
                       onClick={() => onCheckIn(attendee.id)}
                       className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
@@ -184,7 +192,7 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
             <CardContent className="p-12 text-center">
               <div className="text-gray-400">
                 <Search className="h-16 w-16 mx-auto mb-4" />
-                <p className="text-lg font-medium">No attendees found</p>
+                <p className="text-lg font-medium">No employees found</p>
                 <p className="text-sm">Try adjusting your search or filter criteria</p>
               </div>
             </CardContent>
