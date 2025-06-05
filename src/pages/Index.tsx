@@ -6,10 +6,11 @@ import { QrCode, Users, CheckCircle, Clock, Loader2 } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
+import CSVImport from "@/components/CSVImport";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 
 const Index = () => {
-  const { attendees, loading, checkInAttendee, getStats } = useSupabaseEventData();
+  const { attendees, loading, checkInAttendee, getStats, refreshData } = useSupabaseEventData();
   const stats = getStats();
 
   // Wrapper function to handle async check-in for QRScanner
@@ -131,21 +132,15 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="text-2xl text-gray-800">System Settings</CardTitle>
                 <CardDescription>
-                  Configure your event check-in system and Microsoft integrations
+                  Configure your event check-in system and import attendee data
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CSVImport onImportComplete={refreshData} />
+                
+                <div className="border-t pt-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Microsoft Forms Integration</h3>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Form ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded">continental-event-form</span></p>
-                      <p className="text-sm text-gray-600">Last Sync: <span className="text-green-600">Connected</span></p>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Database</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Database Status</h3>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">Status: <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge></p>
                       <p className="text-sm text-gray-600">Provider: Supabase</p>
