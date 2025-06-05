@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface SignUpFormProps {
   onToggleMode: () => void;
@@ -20,17 +21,40 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onToggleMode }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
+  const { toast } = useToast();
+
+  const validateContinentalEmail = (email: string): boolean => {
+    const allowedDomains = ['@continental-corporation.com', '@continental.com'];
+    return allowedDomains.some(domain => email.toLowerCase().endsWith(domain));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!validateContinentalEmail(email)) {
+      toast({
+        title: "Invalid Email Domain",
+        description: "Please use a Continental corporation email address (@continental-corporation.com or @continental.com)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
       return;
     }
 
     if (password.length < 6) {
-      alert('Password must be at least 6 characters long');
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -73,17 +97,20 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onToggleMode }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-continental-black font-semibold">Email</Label>
+            <Label htmlFor="email" className="text-continental-black font-semibold">Continental Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Enter your Continental email"
               required
               disabled={loading}
               className="border-continental-gray3 focus:border-continental-yellow focus:ring-continental-yellow/20"
             />
+            <p className="text-xs text-continental-gray2">
+              Only @continental-corporation.com or @continental.com email addresses are allowed
+            </p>
           </div>
           
           <div className="space-y-2">
