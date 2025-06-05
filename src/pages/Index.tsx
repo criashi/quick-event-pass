@@ -2,15 +2,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, Users, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
 import CSVImport from "@/components/CSVImport";
+import UserProfile from "@/components/auth/UserProfile";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const { attendees, loading, checkInAttendee, getStats, refreshData } = useSupabaseEventData();
+  const { user, profile, signOut } = useAuth();
   const stats = getStats();
 
   // Wrapper function to handle async check-in for QRScanner
@@ -32,19 +36,42 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
-              <QrCode className="h-8 w-8 text-white" />
+        {/* Header with User Info */}
+        <div className="flex justify-between items-start mb-8">
+          <div className="text-center flex-1">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+                <QrCode className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Continental Event Check-In
+              </h1>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Continental Event Check-In
-            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Employee event registration and check-in management system
+            </p>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Employee event registration and check-in management system
-          </p>
+          
+          {/* User Menu */}
+          <div className="flex items-center gap-2 ml-4">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-700">
+                {profile?.full_name || user?.email}
+              </p>
+              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
+                {profile?.role}
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={signOut}
+              className="ml-2"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Stats Overview */}
@@ -100,7 +127,7 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white shadow-md border border-gray-200">
+          <TabsList className="grid w-full grid-cols-5 bg-white shadow-md border border-gray-200">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Dashboard
             </TabsTrigger>
@@ -112,6 +139,10 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Settings
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              <User className="h-4 w-4 mr-1" />
+              Profile
             </TabsTrigger>
           </TabsList>
 
@@ -150,6 +181,12 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <div className="flex justify-center">
+              <UserProfile />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
