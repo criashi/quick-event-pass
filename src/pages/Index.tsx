@@ -12,6 +12,11 @@ const Index = () => {
   const { attendees, loading, checkInAttendee, getStats } = useSupabaseEventData();
   const stats = getStats();
 
+  // Wrapper function to handle async check-in for QRScanner
+  const handleCheckIn = async (attendeeId: string): Promise<boolean> => {
+    return await checkInAttendee(attendeeId);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
@@ -114,7 +119,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="scanner">
-            <QRScanner onCheckIn={checkInAttendee} attendees={attendees} />
+            <QRScanner onCheckIn={handleCheckIn} attendees={attendees} />
           </TabsContent>
 
           <TabsContent value="attendees">

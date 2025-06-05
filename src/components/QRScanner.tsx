@@ -8,7 +8,7 @@ import { Attendee } from "@/types/attendee";
 import { toast } from "@/hooks/use-toast";
 
 interface QRScannerProps {
-  onCheckIn: (attendeeId: string) => boolean;
+  onCheckIn: (attendeeId: string) => Promise<boolean>;
   attendees: Attendee[];
 }
 
@@ -57,7 +57,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
   }, []);
 
   // Simulate QR code scanning (in real implementation, use a QR scanning library)
-  const simulateQRScan = (mockId: string) => {
+  const simulateQRScan = async (mockId: string) => {
     const attendee = attendees.find(a => a.id === mockId);
     
     if (!attendee) {
@@ -73,30 +73,30 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       return;
     }
 
-    if (attendee.checkedIn) {
+    if (attendee.checked_in) {
       setScanResult({
         success: false,
         attendee,
-        message: `${attendee.firstName} ${attendee.lastName} is already checked in.`
+        message: `${attendee.full_name} is already checked in.`
       });
       toast({
         title: "Already Checked In",
-        description: `${attendee.firstName} ${attendee.lastName} was already checked in at ${new Date(attendee.checkInTime!).toLocaleTimeString()}.`,
+        description: `${attendee.full_name} was already checked in at ${attendee.check_in_time ? new Date(attendee.check_in_time).toLocaleTimeString() : 'unknown time'}.`,
         variant: "destructive",
       });
       return;
     }
 
-    const success = onCheckIn(mockId);
+    const success = await onCheckIn(mockId);
     if (success) {
       setScanResult({
         success: true,
         attendee,
-        message: `Successfully checked in ${attendee.firstName} ${attendee.lastName}!`
+        message: `Successfully checked in ${attendee.full_name}!`
       });
       toast({
         title: "Check-in Successful",
-        description: `${attendee.firstName} ${attendee.lastName} has been checked in.`,
+        description: `${attendee.full_name} has been checked in.`,
       });
     }
     
@@ -176,36 +176,18 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
 
             {/* Demo Buttons for Testing */}
             <div className="border-t pt-4">
-              <p className="text-sm text-gray-600 mb-3">Demo - Test with sample QR codes:</p>
+              <p className="text-sm text-gray-600 mb-3">Demo - Test with sample attendees:</p>
               <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => simulateQRScan('1')}
-                >
-                  Scan John Doe
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => simulateQRScan('2')}
-                >
-                  Scan Jane Smith
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => simulateQRScan('999')}
-                >
-                  Invalid QR
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => simulateQRScan('1')}
-                >
-                  Duplicate Scan
-                </Button>
+                {attendees.slice(0, 4).map((attendee, index) => (
+                  <Button 
+                    key={attendee.id}
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => simulateQRScan(attendee.id)}
+                  >
+                    Scan {attendee.full_name.split(' ')[0]}
+                  </Button>
+                ))}
               </div>
             </div>
           </CardContent>
@@ -245,31 +227,31 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="font-medium text-gray-700">Name</p>
-                        <p className="text-gray-600">{scanResult.attendee.firstName} {scanResult.attendee.lastName}</p>
+                        <p className="text-gray-600">{scanResult.attendee.full_name}</p>
                       </div>
                       <div>
-                        <p className="font-medium text-gray-700">Department</p>
-                        <p className="text-gray-600">{scanResult.attendee.department}</p>
+                        <p className="font-medium text-gray-700">Business Area</p>
+                        <p className="text-gray-600">{scanResult.attendee.business_area}</p>
                       </div>
                       <div>
                         <p className="font-medium text-gray-700">Email</p>
-                        <p className="text-gray-600">{scanResult.attendee.email}</p>
+                        <p className="text-gray-600">{scanResult.attendee.continental_email}</p>
                       </div>
                       <div>
                         <p className="font-medium text-gray-700">Status</p>
                         <Badge 
                           variant="secondary" 
-                          className={scanResult.attendee.checkedIn ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}
+                          className={scanResult.attendee.checked_in ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}
                         >
-                          {scanResult.attendee.checkedIn ? 'Checked In' : 'Pending'}
+                          {scanResult.attendee.checked_in ? 'Checked In' : 'Pending'}
                         </Badge>
                       </div>
                     </div>
                     
-                    {scanResult.attendee.foodAllergies && (
+                    {scanResult.attendee.vegetarian_vegan_option === 'Yes' && (
                       <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
-                        <p className="font-medium text-yellow-800">⚠️ Food Allergies</p>
-                        <p className="text-yellow-700 text-sm">{scanResult.attendee.foodAllergies}</p>
+                        <p className="font-medium text-yellow-800">🥗 Dietary Requirements</p>
+                        <p className="text-yellow-700 text-sm">Vegetarian/Vegan option required</p>
                       </div>
                     )}
                   </div>
