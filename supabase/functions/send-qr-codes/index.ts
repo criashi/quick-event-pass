@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,6 +24,8 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
     const { attendeeIds, sendToAll }: SendQRRequest = await req.json();
 
@@ -85,17 +88,17 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send emails with QR codes
+    // Send emails with QR codes using Resend
     const emailResults = [];
     
     for (const attendee of attendees) {
       const qrCodeData = attendee.qr_code_data || `CONTINENTAL_EVENT_${attendee.id}`;
       
       try {
-        // Generate simple QR code URL (using a QR code service)
+        // Generate QR code URL using a QR code service
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeData)}`;
         
-        // Create email HTML with QR code
+        // Create email HTML with Continental branding
         const emailHtml = `
           <!DOCTYPE html>
           <html>
@@ -107,9 +110,9 @@ const handler = async (req: Request): Promise<Response> => {
                 .header { text-align: center; margin-bottom: 30px; }
                 .logo { background: linear-gradient(135deg, #FFD700, #FFA500); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
                 .qr-section { text-align: center; margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 10px; }
-                .qr-code { border: 3px solid #333; border-radius: 10px; }
+                .qr-code { border: 3px solid #333; border-radius: 10px; max-width: 100%; height: auto; }
                 .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
-                .btn { display: inline-block; padding: 12px 24px; background-color: #FFD700; color: #333; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px 0; }
+                .instructions { background-color: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; }
               </style>
             </head>
             <body>
@@ -132,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <p style="font-size: 14px; color: #666;">Present this QR code at the event for quick check-in</p>
                 </div>
                 
-                <div style="background-color: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <div class="instructions">
                   <h4 style="margin-top: 0; color: #0066cc;">Event Details:</h4>
                   <p>📅 <strong>Date:</strong> Please check your event invitation for date and time</p>
                   <p>📍 <strong>Location:</strong> Continental Corporation</p>
@@ -156,25 +159,21 @@ const handler = async (req: Request): Promise<Response> => {
           </html>
         `;
 
-        // Send email using Supabase's built-in email service
-        const { error: emailError } = await supabaseClient.auth.admin.inviteUserByEmail(
-          attendee.continental_email,
-          {
-            data: {
-              custom_email: true,
-              email_html: emailHtml,
-              subject: 'Your Continental Event QR Code - Ready for Check-in!'
-            }
-          }
-        );
+        // Send email using Resend
+        const emailResponse = await resend.emails.send({
+          from: 'Continental Events <onboarding@resend.dev>',
+          to: [attendee.continental_email],
+          subject: 'Your Continental Event QR Code - Ready for Check-in!',
+          html: emailHtml,
+        });
 
-        if (emailError) {
-          console.error(`Email error for ${attendee.continental_email}:`, emailError);
+        if (emailResponse.error) {
+          console.error(`Email error for ${attendee.continental_email}:`, emailResponse.error);
           emailResults.push({
             attendee_id: attendee.id,
             email: attendee.continental_email,
             success: false,
-            error: emailError.message
+            error: emailResponse.error.message
           });
         } else {
           console.log(`QR code email sent successfully to ${attendee.continental_email}`);
