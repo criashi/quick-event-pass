@@ -107,69 +107,71 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver font-continental">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with Continental Branding and Hamburger Menu */}
-        <div className="flex justify-between items-center mb-8">
-          {/* Hamburger Menu */}
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black">
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] bg-continental-white">
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b border-continental-gray3">
-                  <h2 className="text-lg font-semibold text-continental-black">Navigation</h2>
-                </div>
-                <nav className="flex-1 py-4">
-                  <div className="space-y-2">
-                    {menuItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleMenuItemClick(item.id)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
-                            currentView === item.id
-                              ? 'bg-continental-yellow text-continental-black font-medium'
-                              : 'text-continental-gray1 hover:bg-continental-gray4 hover:text-continental-black'
-                          }`}
-                        >
-                          <Icon className="h-5 w-5" />
-                          {item.label}
-                        </button>
-                      );
-                    })}
+        {/* Improved Header Layout */}
+        <div className="flex items-center justify-between mb-8 gap-4">
+          {/* Left: Hamburger Menu */}
+          <div className="flex-shrink-0">
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[280px] bg-continental-white">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center justify-between p-4 border-b border-continental-gray3">
+                    <h2 className="text-lg font-semibold text-continental-black">Navigation</h2>
                   </div>
-                </nav>
-              </div>
-            </SheetContent>
-          </Sheet>
+                  <nav className="flex-1 py-4">
+                    <div className="space-y-2">
+                      {menuItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleMenuItemClick(item.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                              currentView === item.id
+                                ? 'bg-continental-yellow text-continental-black font-medium'
+                                : 'text-continental-gray1 hover:bg-continental-gray4 hover:text-continental-black'
+                            }`}
+                          >
+                            <Icon className="h-5 w-5" />
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </nav>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-          {/* Continental Logo and Title */}
-          <div className="text-center flex-1">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10">
+          {/* Center: Continental Logo and Title */}
+          <div className="flex-1 text-center px-4">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10 flex-shrink-0">
                 <img 
                   src="/lovable-uploads/7db59a9c-fbb6-4e19-951e-7a41b8ae2800.png" 
                   alt="Continental Logo" 
-                  className="h-8 w-8 object-contain"
+                  className="h-6 w-6 object-contain"
                 />
               </div>
-              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-continental-black`}>
+              <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-continental-black`}>
                 Continental Events
               </h1>
             </div>
-            <div className="w-20 h-1 bg-continental-yellow mx-auto mb-4"></div>
-            <p className={`${isMobile ? 'text-base' : 'text-lg'} text-continental-gray1 font-medium max-w-2xl mx-auto`}>
+            <div className="w-16 h-1 bg-continental-yellow mx-auto mb-2"></div>
+            <p className={`${isMobile ? 'text-sm' : 'text-base'} text-continental-gray1 font-medium`}>
               Employee event registration and check-in management system
             </p>
           </div>
           
-          {/* User Menu */}
-          <div className="flex items-center gap-2">
+          {/* Right: User Menu */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="text-right">
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-continental-gray1`}>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-continental-gray1 truncate max-w-[120px]`}>
                 {profile?.full_name || user?.email}
               </p>
               <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs bg-continental-yellow text-continental-black">
@@ -180,7 +182,7 @@ const Index = () => {
               variant="outline"
               size="icon"
               onClick={signOut}
-              className="ml-2 border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black"
+              className="border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black flex-shrink-0"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
