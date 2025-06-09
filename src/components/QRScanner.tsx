@@ -17,59 +17,100 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
   const [lastScanned, setLastScanned] = useState<string>("");
   const [scanResult, setScanResult] = useState<{ success: boolean; attendee?: Attendee; message: string } | null>(null);
   const [cameraError, setCameraError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   const startCamera = async () => {
     try {
+      setIsLoading(true);
       setCameraError("");
       console.log('Attempting to start camera...');
       
-      // Try different camera configurations for better mobile support
+      // Stop any existing stream first
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+
+      // Mobile-optimized camera constraints
       const constraints = {
         video: {
-          facingMode: { ideal: 'environment' }, // Prefer back camera
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 }
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 15, max: 30 }
         },
         audio: false
       };
 
-      // First try with ideal constraints
+      console.log('Requesting camera access with constraints:', constraints);
       let stream: MediaStream;
+      
       try {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
-        console.log('Camera started with ideal constraints');
+        console.log('Camera stream obtained successfully');
       } catch (error) {
-        console.log('Ideal constraints failed, trying fallback...');
-        // Fallback to basic constraints
+        console.log('Fallback to basic constraints due to error:', error);
+        // Fallback to minimal constraints
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: true,
           audio: false
         });
-        console.log('Camera started with fallback constraints');
+        console.log('Camera stream obtained with fallback constraints');
       }
 
-      if (videoRef.current) {
+      if (videoRef.current && stream) {
+        console.log('Setting video source...');
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        // Wait for video to load
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
+        // Force video properties for mobile
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.muted = true;
+        videoRef.current.autoplay = true;
+        
+        // Wait for metadata and then play
+        const playVideo = () => {
           if (videoRef.current) {
-            videoRef.current.play().then(() => {
-              console.log('Video playing');
-              setIsCameraOn(true);
-            }).catch((playError) => {
-              console.error('Error playing video:', playError);
-              setCameraError('Failed to start video playback');
-            });
+            console.log('Video metadata loaded, attempting to play...');
+            videoRef.current.play()
+              .then(() => {
+                console.log('Video is now playing');
+                setIsCameraOn(true);
+                setIsLoading(false);
+              })
+              .catch((playError) => {
+                console.error('Error playing video:', playError);
+                setCameraError('Failed to display camera feed. Try refreshing the page.');
+                setIsLoading(false);
+              });
           }
+        };
+
+        if (videoRef.current.readyState >= 2) {
+          // Metadata already loaded
+          playVideo();
+        } else {
+          videoRef.current.onloadedmetadata = playVideo;
+        }
+
+        // Add additional event listeners for troubleshooting
+        videoRef.current.oncanplay = () => {
+          console.log('Video can start playing');
+        };
+        
+        videoRef.current.onerror = (error) => {
+          console.error('Video element error:', error);
+          setCameraError('Video display error. Please try again.');
+          setIsLoading(false);
         };
       }
     } catch (error: any) {
       console.error('Error accessing camera:', error);
+      setIsLoading(false);
+      
       let errorMessage = "Could not access camera. ";
       
       if (error.name === 'NotAllowedError') {
@@ -77,7 +118,9 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       } else if (error.name === 'NotFoundError') {
         errorMessage += "No camera found on this device.";
       } else if (error.name === 'NotSupportedError') {
-        errorMessage += "Camera not supported in this browser.";
+        errorMessage += "Camera not supported in this browser. Try using Chrome or Safari.";
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage += "Camera constraints not supported. Trying with basic settings...";
       } else {
         errorMessage += "Please check camera permissions and try again.";
       }
@@ -93,6 +136,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
 
   const stopCamera = () => {
     console.log('Stopping camera...');
+    setIsLoading(false);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => {
         track.stop();
@@ -178,7 +222,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {isCameraOn ? (
+                {isCameraOn || isLoading ? (
                   <>
                     <video
                       ref={videoRef}
@@ -186,17 +230,32 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                       playsInline
                       muted
                       className="w-full h-full object-cover"
+                      style={{ 
+                        transform: 'scaleX(-1)', // Mirror the video for better UX
+                        backgroundColor: '#000'
+                      }}
                     />
-                    {/* Scanning overlay */}
-                    <div className="absolute inset-0 border-2 border-blue-500 border-dashed animate-pulse">
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                        <div className="w-48 h-48 border-4 border-blue-500 bg-blue-500/10 rounded-lg">
-                          <div className="w-full h-full flex items-center justify-center">
-                            <p className="text-white font-medium text-center px-2">Position QR Code Here</p>
+                    {/* Loading overlay */}
+                    {isLoading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="text-center text-white">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                          <p className="text-sm">Starting camera...</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Scanning overlay - only show when camera is actually on */}
+                    {isCameraOn && !isLoading && (
+                      <div className="absolute inset-0 border-2 border-blue-500 border-dashed animate-pulse">
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                          <div className="w-48 h-48 border-4 border-blue-500 bg-blue-500/10 rounded-lg">
+                            <div className="w-full h-full flex items-center justify-center">
+                              <p className="text-white font-medium text-center px-2">Position QR Code Here</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -225,10 +284,20 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
               {!isCameraOn ? (
                 <Button 
                   onClick={startCamera}
+                  disabled={isLoading}
                   className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                 >
-                  <Camera className="h-4 w-4 mr-2" />
-                  Start Camera
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Starting...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Start Camera
+                    </>
+                  )}
                 </Button>
               ) : (
                 <Button 
@@ -247,6 +316,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
               <h4 className="font-medium text-blue-800 mb-2">📱 Mobile Tips:</h4>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Allow camera permissions when prompted</li>
+                <li>• If camera doesn't show, try refreshing the page</li>
                 <li>• Use the rear camera for better QR scanning</li>
                 <li>• Ensure good lighting for clear scanning</li>
                 <li>• Hold the QR code steady in the frame</li>
