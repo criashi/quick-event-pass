@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,14 +22,26 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
 
   const processQRCode = async (result: string) => {
-    // Prevent duplicate scans
-    if (result === lastScanned) {
+    const now = Date.now();
+    
+    // Prevent duplicate scans - both same content and time-based cooldown
+    if (result === lastScanned || now - lastScanTimeRef.current < 3000) {
+      console.log('Duplicate scan prevented:', { result, lastScanned, timeSinceLastScan: now - lastScanTimeRef.current });
+      return;
+    }
+
+    // Prevent multiple simultaneous scans
+    if (isScanning) {
+      console.log('Scan already in progress, ignoring');
       return;
     }
 
     console.log('QR Code scanned:', result);
+    setLastScanned(result);
+    lastScanTimeRef.current = now;
     setIsScanning(true);
     
     // Try to extract attendee ID from QR code data
@@ -109,7 +122,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       });
     }
     
-    setLastScanned(result);
     setIsScanning(false);
   };
 
@@ -135,6 +147,10 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
         qrScannerRef.current = null;
       }
 
+      // Reset scan tracking
+      setLastScanned("");
+      lastScanTimeRef.current = 0;
+
       // Initialize QR Scanner with minimal interference
       qrScannerRef.current = new QrScanner(
         videoRef.current,
@@ -146,7 +162,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
           preferredCamera: 'environment',
           highlightScanRegion: true,
           highlightCodeOutline: true,
-          maxScansPerSecond: 3,
+          maxScansPerSecond: 2, // Reduced from 3 to help prevent duplicates
         }
       );
 
@@ -192,6 +208,10 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       qrScannerRef.current = null;
       console.log('QR scanner stopped and destroyed');
     }
+    
+    // Reset scan tracking
+    setLastScanned("");
+    lastScanTimeRef.current = 0;
     
     setIsCameraOn(false);
     setCameraError("");
@@ -325,6 +345,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                 <li>• Ensure good lighting for clear scanning</li>
                 <li>• The scanner will automatically detect QR codes</li>
                 <li>• Green outline indicates successful detection</li>
+                <li>• Move the QR code away after scanning to avoid duplicates</li>
               </ul>
             </div>
 
