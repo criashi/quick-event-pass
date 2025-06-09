@@ -120,7 +120,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       console.log('Attempting to start camera...');
 
       // Wait for video element to be ready
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       if (!videoRef.current) {
         console.error('Video element not found in ref');
@@ -230,18 +230,13 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {/* Video element - always rendered but conditionally visible */}
+                {/* Video element */}
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover',
-                    display: isCameraOn ? 'block' : 'none'
-                  }}
+                  className={`w-full h-full object-cover ${isCameraOn ? 'block' : 'hidden'}`}
                 />
                 
                 {/* Camera off state */}
