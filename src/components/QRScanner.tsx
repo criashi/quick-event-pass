@@ -158,6 +158,13 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       console.log('Starting QR scanner...');
       await qrScannerRef.current.start();
       
+      // Ensure video is visible after successful start
+      if (videoRef.current) {
+        videoRef.current.style.display = 'block';
+        videoRef.current.style.visibility = 'visible';
+        console.log('Video element made visible');
+      }
+      
       setIsCameraOn(true);
       setIsLoading(false);
       console.log('QR scanner started successfully');
@@ -198,6 +205,11 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       console.log('QR scanner stopped and destroyed');
     }
     
+    // Hide video when stopping
+    if (videoRef.current) {
+      videoRef.current.style.display = 'none';
+    }
+    
     setIsCameraOn(false);
     setCameraError("");
   };
@@ -231,27 +243,22 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {/* Video element - always present */}
+                {/* Video element */}
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
+                  className="absolute inset-0 w-full h-full object-cover"
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    zIndex: 1,
-                    visibility: isCameraOn ? 'visible' : 'hidden'
+                    display: isCameraOn ? 'block' : 'none',
+                    zIndex: 1
                   }}
                 />
                 
                 {/* Camera off state */}
                 {!isCameraOn && !isLoading && (
-                  <div className="w-full h-full flex items-center justify-center absolute inset-0 z-10">
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
                     <div className="text-center text-gray-400 p-4">
                       {cameraError ? (
                         <>
