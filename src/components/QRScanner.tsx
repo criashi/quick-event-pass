@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,24 +34,43 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
     // Try to extract attendee ID from QR code data
     let attendeeId = result;
     
-    // If the QR code contains JSON, try to parse it
+    // Handle different QR code formats
     try {
+      // Try parsing as JSON first
       const parsed = JSON.parse(result);
       if (parsed.attendeeId) {
         attendeeId = parsed.attendeeId;
       } else if (parsed.id) {
         attendeeId = parsed.id;
+      } else if (parsed.attendee_id) {
+        attendeeId = parsed.attendee_id;
       }
     } catch {
-      // If not JSON, use the raw result as attendee ID
+      // If not JSON, check if it's a URL or contains an ID
+      if (result.includes('attendee_id=')) {
+        const urlParams = new URLSearchParams(result.split('?')[1] || result);
+        attendeeId = urlParams.get('attendee_id') || result;
+      } else if (result.includes('id=')) {
+        const urlParams = new URLSearchParams(result.split('?')[1] || result);
+        attendeeId = urlParams.get('id') || result;
+      }
+      // Otherwise use the raw result as attendee ID
     }
 
-    const attendee = attendees.find(a => a.id === attendeeId);
+    console.log('Extracted attendee ID:', attendeeId);
+
+    // Find attendee by ID or by matching QR code data
+    const attendee = attendees.find(a => 
+      a.id === attendeeId || 
+      a.qr_code_data === result ||
+      a.id === result
+    );
     
     if (!attendee) {
+      console.log('Available attendees:', attendees.map(a => ({ id: a.id, name: a.full_name, qr_code_data: a.qr_code_data })));
       setScanResult({
         success: false,
-        message: "QR code not recognized. Please check your registration."
+        message: `QR code not recognized. Scanned: ${result.substring(0, 50)}...`
       });
       toast({
         title: "Invalid QR Code",
@@ -78,7 +96,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       return;
     }
 
-    const success = await onCheckIn(attendeeId);
+    const success = await onCheckIn(attendee.id);
     if (success) {
       setScanResult({
         success: true,
@@ -101,8 +119,8 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       setCameraError("");
       console.log('Attempting to start camera...');
 
-      // Wait a bit to ensure the video element is rendered
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for video element to be ready
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       if (!videoRef.current) {
         console.error('Video element not found in ref');
@@ -132,7 +150,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
           preferredCamera: 'environment',
           highlightScanRegion: true,
           highlightCodeOutline: true,
-          maxScansPerSecond: 5,
+          maxScansPerSecond: 3,
         }
       );
 
@@ -212,15 +230,21 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {/* Always render the video element */}
+                {/* Video element - always rendered but conditionally visible */}
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className={`w-full h-full object-cover ${!isCameraOn ? 'hidden' : ''}`}
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    display: isCameraOn ? 'block' : 'none'
+                  }}
                 />
                 
+                {/* Camera off state */}
                 {!isCameraOn && !isLoading && (
                   <div className="w-full h-full flex items-center justify-center absolute inset-0">
                     <div className="text-center text-gray-400 p-4">
