@@ -101,10 +101,23 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       setCameraError("");
       console.log('Attempting to start camera...');
 
+      // Wait a bit to ensure the video element is rendered
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       if (!videoRef.current) {
-        setCameraError("Video element not found");
+        console.error('Video element not found in ref');
+        setCameraError("Video element not found. Please try again.");
         setIsLoading(false);
         return;
+      }
+
+      console.log('Video element found, initializing QR scanner...');
+
+      // Stop any existing scanner first
+      if (qrScannerRef.current) {
+        qrScannerRef.current.stop();
+        qrScannerRef.current.destroy();
+        qrScannerRef.current = null;
       }
 
       // Initialize QR Scanner
@@ -199,42 +212,17 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {isCameraOn || isLoading ? (
-                  <>
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Loading overlay */}
-                    {isLoading && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="text-center text-white">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-                          <p className="text-sm">Starting camera...</p>
-                        </div>
-                      </div>
-                    )}
-                    {/* Scanning status */}
-                    {isCameraOn && !isLoading && (
-                      <div className="absolute top-4 left-4 right-4">
-                        <div className="bg-black/70 text-white px-3 py-2 rounded-lg text-sm text-center">
-                          {isScanning ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              Processing QR Code...
-                            </div>
-                          ) : (
-                            "Ready to scan - Position QR code in camera view"
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                {/* Always render the video element */}
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`w-full h-full object-cover ${!isCameraOn ? 'hidden' : ''}`}
+                />
+                
+                {!isCameraOn && !isLoading && (
+                  <div className="w-full h-full flex items-center justify-center absolute inset-0">
                     <div className="text-center text-gray-400 p-4">
                       {cameraError ? (
                         <>
@@ -248,6 +236,32 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                           <p className="text-lg font-medium">Camera is off</p>
                           <p className="text-sm">Click "Start Camera" to begin scanning</p>
                         </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading overlay */}
+                {isLoading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                      <p className="text-sm">Starting camera...</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Scanning status */}
+                {isCameraOn && !isLoading && (
+                  <div className="absolute top-4 left-4 right-4">
+                    <div className="bg-black/70 text-white px-3 py-2 rounded-lg text-sm text-center">
+                      {isScanning ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Processing QR Code...
+                        </div>
+                      ) : (
+                        "Ready to scan - Position QR code in camera view"
                       )}
                     </div>
                   </div>
