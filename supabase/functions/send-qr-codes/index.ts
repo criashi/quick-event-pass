@@ -161,7 +161,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Send email using Resend - use the user's verified domain
         const emailResponse = await resend.emails.send({
-          from: 'Continental Events <noreply@yourdomain.com>', // You need to replace this with your verified domain
+          from: 'Continental Events <noreply@conti-event.net>', // You need to replace this with your verified domain
           to: [attendee.continental_email],
           subject: 'Your Continental Event QR Code - Ready for Check-in!',
           html: emailHtml,
