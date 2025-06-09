@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -120,9 +119,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       setCameraError("");
       console.log('Attempting to start camera...');
 
-      // Wait for video element to be ready
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       if (!videoRef.current) {
         console.error('Video element not found in ref');
         setCameraError("Video element not found. Please try again.");
@@ -139,13 +135,12 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
         qrScannerRef.current = null;
       }
 
-      // Initialize QR Scanner
+      // Initialize QR Scanner with minimal interference
       qrScannerRef.current = new QrScanner(
         videoRef.current,
         (result) => processQRCode(result.data),
         {
           onDecodeError: (error) => {
-            // Don't log decode errors as they're normal when no QR code is visible
             console.debug('QR decode error (normal):', error);
           },
           preferredCamera: 'environment',
@@ -157,13 +152,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
 
       console.log('Starting QR scanner...');
       await qrScannerRef.current.start();
-      
-      // Ensure video is visible after successful start
-      if (videoRef.current) {
-        videoRef.current.style.display = 'block';
-        videoRef.current.style.visibility = 'visible';
-        console.log('Video element made visible');
-      }
       
       setIsCameraOn(true);
       setIsLoading(false);
@@ -205,11 +193,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       console.log('QR scanner stopped and destroyed');
     }
     
-    // Hide video when stopping
-    if (videoRef.current) {
-      videoRef.current.style.display = 'none';
-    }
-    
     setIsCameraOn(false);
     setCameraError("");
   };
@@ -243,22 +226,18 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {/* Video element */}
+                {/* Video element - let QR Scanner library handle it completely */}
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{
-                    display: isCameraOn ? 'block' : 'none',
-                    zIndex: 1
-                  }}
+                  className="w-full h-full object-cover"
                 />
                 
-                {/* Camera off state */}
+                {/* Camera off state overlay */}
                 {!isCameraOn && !isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10">
                     <div className="text-center text-gray-400 p-4">
                       {cameraError ? (
                         <>
