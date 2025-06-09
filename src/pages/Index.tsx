@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut } from "lucide-react";
+import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
@@ -12,10 +12,12 @@ import UserProfile from "@/components/auth/UserProfile";
 import QRCodeSender from "@/components/QRCodeSender";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const { attendees, loading, checkInAttendee, getStats, refreshData } = useSupabaseEventData();
   const { user, profile, signOut } = useAuth();
+  const isMobile = useIsMobile();
   const stats = getStats();
 
   // Wrapper function to handle async check-in for QRScanner
@@ -48,12 +50,12 @@ const Index = () => {
                   className="h-8 w-8 object-contain"
                 />
               </div>
-              <h1 className="text-4xl font-bold text-continental-black">
+              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-continental-black`}>
                 Continental Events
               </h1>
             </div>
             <div className="w-20 h-1 bg-continental-yellow mx-auto mb-4"></div>
-            <p className="text-lg text-continental-gray1 font-medium max-w-2xl mx-auto">
+            <p className={`${isMobile ? 'text-base' : 'text-lg'} text-continental-gray1 font-medium max-w-2xl mx-auto`}>
               Employee event registration and check-in management system
             </p>
           </div>
@@ -61,7 +63,7 @@ const Index = () => {
           {/* User Menu */}
           <div className="flex items-center gap-2 ml-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-continental-gray1">
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-continental-gray1`}>
                 {profile?.full_name || user?.email}
               </p>
               <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs bg-continental-yellow text-continental-black">
@@ -81,51 +83,51 @@ const Index = () => {
         </div>
 
         {/* Stats Overview with Continental Colors */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'} gap-4 md:gap-6 mb-8`}>
           <Card className="bg-gradient-to-r from-continental-dark-blue to-continental-light-blue text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-continental-white/80 text-sm font-medium">Total Registered</p>
-                  <p className="text-3xl font-bold">{stats.total}</p>
+                  <p className={`text-continental-white/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Total Registered</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.total}</p>
                 </div>
-                <Users className="h-8 w-8 text-continental-white/70" />
+                <Users className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-white/70`} />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-continental-dark-green to-continental-light-green text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-continental-white/80 text-sm font-medium">Checked In</p>
-                  <p className="text-3xl font-bold">{stats.checkedIn}</p>
+                  <p className={`text-continental-white/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Checked In</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.checkedIn}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-continental-white/70" />
+                <CheckCircle className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-white/70`} />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-continental-yellow to-continental-yellow/80 text-continental-black border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-continental-black/70 text-sm font-medium">Pending</p>
-                  <p className="text-3xl font-bold">{stats.pending}</p>
+                  <p className={`text-continental-black/70 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Pending</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.pending}</p>
                 </div>
-                <Clock className="h-8 w-8 text-continental-black/60" />
+                <Clock className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-black/60`} />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-continental-gray1 to-continental-gray2 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-continental-white/80 text-sm font-medium">Check-in Rate</p>
-                  <p className="text-3xl font-bold">{stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0}%</p>
+                  <p className={`text-continental-white/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Check-in Rate</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0}%</p>
                 </div>
-                <QrCode className="h-8 w-8 text-continental-white/70" />
+                <QrCode className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-white/70`} />
               </div>
             </CardContent>
           </Card>
@@ -133,26 +135,51 @@ const Index = () => {
 
         {/* Main Content with Continental Styling */}
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-continental-white shadow-md border border-continental-gray3">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
+          <TabsList className={`${isMobile ? 'grid grid-cols-3 gap-1 h-auto p-1' : 'grid w-full grid-cols-6'} bg-continental-white shadow-md border border-continental-gray3`}>
+            <TabsTrigger 
+              value="dashboard" 
+              className={`${isMobile ? 'flex flex-col items-center gap-1 px-2 py-2 text-xs' : ''} data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium`}
+            >
+              {isMobile && <QrCode className="h-4 w-4" />}
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="scanner" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
+            <TabsTrigger 
+              value="scanner" 
+              className={`${isMobile ? 'flex flex-col items-center gap-1 px-2 py-2 text-xs' : ''} data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium`}
+            >
+              {isMobile && <QrCode className="h-4 w-4" />}
               QR Scanner
             </TabsTrigger>
-            <TabsTrigger value="attendees" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
+            <TabsTrigger 
+              value="attendees" 
+              className={`${isMobile ? 'flex flex-col items-center gap-1 px-2 py-2 text-xs' : ''} data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium`}
+            >
+              {isMobile && <Users className="h-4 w-4" />}
               Attendees
             </TabsTrigger>
-            <TabsTrigger value="qr-sender" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
-              Send QR Codes
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
-              Settings
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
-              <User className="h-4 w-4 mr-1" />
-              Profile
-            </TabsTrigger>
+            {!isMobile && (
+              <>
+                <TabsTrigger value="qr-sender" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
+                  Send QR Codes
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
+                  Settings
+                </TabsTrigger>
+                <TabsTrigger value="profile" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
+                  <User className="h-4 w-4 mr-1" />
+                  Profile
+                </TabsTrigger>
+              </>
+            )}
+            {isMobile && (
+              <TabsTrigger 
+                value="more" 
+                className="flex flex-col items-center gap-1 px-2 py-2 text-xs data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium"
+              >
+                <Menu className="h-4 w-4" />
+                More
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -167,40 +194,77 @@ const Index = () => {
             <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} />
           </TabsContent>
 
-          <TabsContent value="qr-sender">
-            <QRCodeSender attendees={attendees} onRefresh={refreshData} />
-          </TabsContent>
+          {!isMobile && (
+            <>
+              <TabsContent value="qr-sender">
+                <QRCodeSender attendees={attendees} onRefresh={refreshData} />
+              </TabsContent>
 
-          <TabsContent value="settings">
-            <Card className="shadow-lg border-0 bg-continental-white">
-              <CardHeader>
-                <CardTitle className="text-2xl text-continental-black">System Settings</CardTitle>
-                <CardDescription className="text-continental-gray1">
-                  Configure your event check-in system and import attendee data
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <CSVImport onImportComplete={refreshData} />
-                
-                <div className="border-t border-continental-gray3 pt-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-continental-black">Database Status</h3>
-                    <div className="space-y-2">
-                      <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
-                      <p className="text-sm text-continental-gray1">Provider: Supabase</p>
-                      <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
+              <TabsContent value="settings">
+                <Card className="shadow-lg border-0 bg-continental-white">
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-continental-black">System Settings</CardTitle>
+                    <CardDescription className="text-continental-gray1">
+                      Configure your event check-in system and import attendee data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <CSVImport onImportComplete={refreshData} />
+                    
+                    <div className="border-t border-continental-gray3 pt-6">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-continental-black">Database Status</h3>
+                        <div className="space-y-2">
+                          <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
+                          <p className="text-sm text-continental-gray1">Provider: Supabase</p>
+                          <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="profile">
-            <div className="flex justify-center">
-              <UserProfile />
-            </div>
-          </TabsContent>
+              <TabsContent value="profile">
+                <div className="flex justify-center">
+                  <UserProfile />
+                </div>
+              </TabsContent>
+            </>
+          )}
+
+          {isMobile && (
+            <TabsContent value="more">
+              <div className="space-y-4">
+                <Card className="shadow-lg border-0 bg-continental-white">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-continental-black">Additional Options</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Tabs defaultValue="qr-sender" className="space-y-4">
+                      <TabsList className="grid w-full grid-cols-3 bg-continental-gray4">
+                        <TabsTrigger value="qr-sender" className="text-xs">QR Codes</TabsTrigger>
+                        <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
+                        <TabsTrigger value="profile" className="text-xs">Profile</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="qr-sender">
+                        <QRCodeSender attendees={attendees} onRefresh={refreshData} />
+                      </TabsContent>
+                      
+                      <TabsContent value="settings">
+                        <CSVImport onImportComplete={refreshData} />
+                      </TabsContent>
+                      
+                      <TabsContent value="profile">
+                        <UserProfile />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
