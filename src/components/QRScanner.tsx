@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -230,18 +231,27 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
             {/* Camera View */}
             <div className="relative">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
-                {/* Video element */}
+                {/* Video element - always present */}
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className={`w-full h-full object-cover ${isCameraOn ? 'block' : 'hidden'}`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    zIndex: 1,
+                    visibility: isCameraOn ? 'visible' : 'hidden'
+                  }}
                 />
                 
                 {/* Camera off state */}
                 {!isCameraOn && !isLoading && (
-                  <div className="w-full h-full flex items-center justify-center absolute inset-0">
+                  <div className="w-full h-full flex items-center justify-center absolute inset-0 z-10">
                     <div className="text-center text-gray-400 p-4">
                       {cameraError ? (
                         <>
@@ -262,7 +272,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
 
                 {/* Loading overlay */}
                 {isLoading && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
                     <div className="text-center text-white">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
                       <p className="text-sm">Starting camera...</p>
@@ -272,7 +282,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
 
                 {/* Scanning status */}
                 {isCameraOn && !isLoading && (
-                  <div className="absolute top-4 left-4 right-4">
+                  <div className="absolute top-4 left-4 right-4 z-30">
                     <div className="bg-black/70 text-white px-3 py-2 rounded-lg text-sm text-center">
                       {isScanning ? (
                         <div className="flex items-center justify-center gap-2">
