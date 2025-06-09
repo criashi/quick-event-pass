@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, CameraOff, CheckCircle, XCircle, Scan, AlertTriangle } from "lucide-react";
 import { Attendee } from "@/types/attendee";
 import { toast } from "@/hooks/use-toast";
+import QrScanner from "qr-scanner";
 
 interface QRScannerProps {
   onCheckIn: (attendeeId: string) => Promise<boolean>;
@@ -18,148 +19,35 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
   const [scanResult, setScanResult] = useState<{ success: boolean; attendee?: Attendee; message: string } | null>(null);
   const [cameraError, setCameraError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const qrScannerRef = useRef<QrScanner | null>(null);
 
-  const startCamera = async () => {
+  const processQRCode = async (result: string) => {
+    // Prevent duplicate scans
+    if (result === lastScanned) {
+      return;
+    }
+
+    console.log('QR Code scanned:', result);
+    setIsScanning(true);
+    
+    // Try to extract attendee ID from QR code data
+    let attendeeId = result;
+    
+    // If the QR code contains JSON, try to parse it
     try {
-      setIsLoading(true);
-      setCameraError("");
-      console.log('Attempting to start camera...');
-      
-      // Stop any existing stream first
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
+      const parsed = JSON.parse(result);
+      if (parsed.attendeeId) {
+        attendeeId = parsed.attendeeId;
+      } else if (parsed.id) {
+        attendeeId = parsed.id;
       }
-
-      // Mobile-optimized camera constraints
-      const constraints = {
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 640, max: 1280 },
-          height: { ideal: 480, max: 720 },
-          frameRate: { ideal: 15, max: 30 }
-        },
-        audio: false
-      };
-
-      console.log('Requesting camera access with constraints:', constraints);
-      let stream: MediaStream;
-      
-      try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        console.log('Camera stream obtained successfully');
-      } catch (error) {
-        console.log('Fallback to basic constraints due to error:', error);
-        // Fallback to minimal constraints
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false
-        });
-        console.log('Camera stream obtained with fallback constraints');
-      }
-
-      if (videoRef.current && stream) {
-        console.log('Setting video source...');
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        
-        // Force video properties for mobile
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('webkit-playsinline', 'true');
-        videoRef.current.muted = true;
-        videoRef.current.autoplay = true;
-        
-        // Wait for metadata and then play
-        const playVideo = () => {
-          if (videoRef.current) {
-            console.log('Video metadata loaded, attempting to play...');
-            videoRef.current.play()
-              .then(() => {
-                console.log('Video is now playing');
-                setIsCameraOn(true);
-                setIsLoading(false);
-              })
-              .catch((playError) => {
-                console.error('Error playing video:', playError);
-                setCameraError('Failed to display camera feed. Try refreshing the page.');
-                setIsLoading(false);
-              });
-          }
-        };
-
-        if (videoRef.current.readyState >= 2) {
-          // Metadata already loaded
-          playVideo();
-        } else {
-          videoRef.current.onloadedmetadata = playVideo;
-        }
-
-        // Add additional event listeners for troubleshooting
-        videoRef.current.oncanplay = () => {
-          console.log('Video can start playing');
-        };
-        
-        videoRef.current.onerror = (error) => {
-          console.error('Video element error:', error);
-          setCameraError('Video display error. Please try again.');
-          setIsLoading(false);
-        };
-      }
-    } catch (error: any) {
-      console.error('Error accessing camera:', error);
-      setIsLoading(false);
-      
-      let errorMessage = "Could not access camera. ";
-      
-      if (error.name === 'NotAllowedError') {
-        errorMessage += "Camera permission denied. Please allow camera access and try again.";
-      } else if (error.name === 'NotFoundError') {
-        errorMessage += "No camera found on this device.";
-      } else if (error.name === 'NotSupportedError') {
-        errorMessage += "Camera not supported in this browser. Try using Chrome or Safari.";
-      } else if (error.name === 'OverconstrainedError') {
-        errorMessage += "Camera constraints not supported. Trying with basic settings...";
-      } else {
-        errorMessage += "Please check camera permissions and try again.";
-      }
-      
-      setCameraError(errorMessage);
-      toast({
-        title: "Camera Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+    } catch {
+      // If not JSON, use the raw result as attendee ID
     }
-  };
 
-  const stopCamera = () => {
-    console.log('Stopping camera...');
-    setIsLoading(false);
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => {
-        track.stop();
-        console.log('Camera track stopped');
-      });
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setIsCameraOn(false);
-    setCameraError("");
-  };
-
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  // Simulate QR code scanning (in real implementation, use a QR scanning library)
-  const simulateQRScan = async (mockId: string) => {
-    const attendee = attendees.find(a => a.id === mockId);
+    const attendee = attendees.find(a => a.id === attendeeId);
     
     if (!attendee) {
       setScanResult({
@@ -171,6 +59,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
         description: "This QR code is not registered for this event.",
         variant: "destructive",
       });
+      setIsScanning(false);
       return;
     }
 
@@ -185,10 +74,11 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
         description: `${attendee.full_name} was already checked in at ${attendee.check_in_time ? new Date(attendee.check_in_time).toLocaleTimeString() : 'unknown time'}.`,
         variant: "destructive",
       });
+      setIsScanning(false);
       return;
     }
 
-    const success = await onCheckIn(mockId);
+    const success = await onCheckIn(attendeeId);
     if (success) {
       setScanResult({
         success: true,
@@ -201,7 +91,94 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
       });
     }
     
-    setLastScanned(mockId);
+    setLastScanned(result);
+    setIsScanning(false);
+  };
+
+  const startCamera = async () => {
+    try {
+      setIsLoading(true);
+      setCameraError("");
+      console.log('Attempting to start camera...');
+
+      if (!videoRef.current) {
+        setCameraError("Video element not found");
+        setIsLoading(false);
+        return;
+      }
+
+      // Initialize QR Scanner
+      qrScannerRef.current = new QrScanner(
+        videoRef.current,
+        (result) => processQRCode(result.data),
+        {
+          onDecodeError: (error) => {
+            // Don't log decode errors as they're normal when no QR code is visible
+            console.debug('QR decode error (normal):', error);
+          },
+          preferredCamera: 'environment',
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+          maxScansPerSecond: 5,
+        }
+      );
+
+      console.log('Starting QR scanner...');
+      await qrScannerRef.current.start();
+      
+      setIsCameraOn(true);
+      setIsLoading(false);
+      console.log('QR scanner started successfully');
+
+    } catch (error: any) {
+      console.error('Error starting QR scanner:', error);
+      setIsLoading(false);
+      
+      let errorMessage = "Could not access camera. ";
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage += "Camera permission denied. Please allow camera access and try again.";
+      } else if (error.name === 'NotFoundError') {
+        errorMessage += "No camera found on this device.";
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage += "Camera not supported in this browser. Try using Chrome or Safari.";
+      } else {
+        errorMessage += "Please check camera permissions and try again.";
+      }
+      
+      setCameraError(errorMessage);
+      toast({
+        title: "Camera Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopCamera = () => {
+    console.log('Stopping QR scanner...');
+    setIsLoading(false);
+    
+    if (qrScannerRef.current) {
+      qrScannerRef.current.stop();
+      qrScannerRef.current.destroy();
+      qrScannerRef.current = null;
+      console.log('QR scanner stopped and destroyed');
+    }
+    
+    setIsCameraOn(false);
+    setCameraError("");
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  // Simulate QR code scanning for demo purposes
+  const simulateQRScan = async (mockId: string) => {
+    await processQRCode(mockId);
   };
 
   return (
@@ -230,10 +207,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                       playsInline
                       muted
                       className="w-full h-full object-cover"
-                      style={{ 
-                        transform: 'scaleX(-1)', // Mirror the video for better UX
-                        backgroundColor: '#000'
-                      }}
                     />
                     {/* Loading overlay */}
                     {isLoading && (
@@ -244,15 +217,18 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                         </div>
                       </div>
                     )}
-                    {/* Scanning overlay - only show when camera is actually on */}
+                    {/* Scanning status */}
                     {isCameraOn && !isLoading && (
-                      <div className="absolute inset-0 border-2 border-blue-500 border-dashed animate-pulse">
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                          <div className="w-48 h-48 border-4 border-blue-500 bg-blue-500/10 rounded-lg">
-                            <div className="w-full h-full flex items-center justify-center">
-                              <p className="text-white font-medium text-center px-2">Position QR Code Here</p>
+                      <div className="absolute top-4 left-4 right-4">
+                        <div className="bg-black/70 text-white px-3 py-2 rounded-lg text-sm text-center">
+                          {isScanning ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              Processing QR Code...
                             </div>
-                          </div>
+                          ) : (
+                            "Ready to scan - Position QR code in camera view"
+                          )}
                         </div>
                       </div>
                     )}
@@ -311,15 +287,15 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
               )}
             </div>
 
-            {/* Mobile Camera Tips */}
+            {/* Mobile QR Scanning Tips */}
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-2">📱 Mobile Tips:</h4>
+              <h4 className="font-medium text-blue-800 mb-2">📱 QR Scanning Tips:</h4>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Allow camera permissions when prompted</li>
-                <li>• If camera doesn't show, try refreshing the page</li>
-                <li>• Use the rear camera for better QR scanning</li>
+                <li>• Hold the QR code steady in the camera view</li>
                 <li>• Ensure good lighting for clear scanning</li>
-                <li>• Hold the QR code steady in the frame</li>
+                <li>• The scanner will automatically detect QR codes</li>
+                <li>• Green outline indicates successful detection</li>
               </ul>
             </div>
 
@@ -333,6 +309,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                     variant="outline" 
                     size="sm"
                     onClick={() => simulateQRScan(attendee.id)}
+                    disabled={isScanning}
                   >
                     Scan {attendee.full_name.split(' ')[0]}
                   </Button>
@@ -414,7 +391,7 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
               <div className="text-center py-12 text-gray-500">
                 <Scan className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg font-medium">Ready to Scan</p>
-                <p className="text-sm">No QR codes scanned yet</p>
+                <p className="text-sm">Point the camera at a QR code to begin</p>
               </div>
             )}
           </CardContent>
