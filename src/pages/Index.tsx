@@ -1,9 +1,10 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu } from "lucide-react";
+import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useState } from "react";
 import Dashboard from "@/components/Dashboard";
 import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
@@ -19,10 +20,26 @@ const Index = () => {
   const { user, profile, signOut } = useAuth();
   const isMobile = useIsMobile();
   const stats = getStats();
+  const [currentView, setCurrentView] = useState("dashboard");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Wrapper function to handle async check-in for QRScanner
   const handleCheckIn = async (attendeeId: string): Promise<boolean> => {
     return await checkInAttendee(attendeeId);
+  };
+
+  const menuItems = [
+    { id: "dashboard", label: "Dashboard", icon: QrCode },
+    { id: "scanner", label: "QR Scanner", icon: QrCode },
+    { id: "attendees", label: "Attendees", icon: Users },
+    { id: "qr-sender", label: "Send QR Codes", icon: QrCode },
+    { id: "settings", label: "Settings", icon: Menu },
+    { id: "profile", label: "Profile", icon: User },
+  ];
+
+  const handleMenuItemClick = (viewId: string) => {
+    setCurrentView(viewId);
+    setMenuOpen(false);
   };
 
   if (loading) {
@@ -36,11 +53,100 @@ const Index = () => {
     );
   }
 
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case "dashboard":
+        return <Dashboard attendees={attendees} stats={stats} />;
+      case "scanner":
+        return <QRScanner onCheckIn={handleCheckIn} attendees={attendees} />;
+      case "attendees":
+        return <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} />;
+      case "qr-sender":
+        return <QRCodeSender attendees={attendees} onRefresh={refreshData} />;
+      case "settings":
+        return (
+          <Card className="shadow-lg border-0 bg-continental-white">
+            <CardHeader>
+              <CardTitle className="text-2xl text-continental-black">System Settings</CardTitle>
+              <CardDescription className="text-continental-gray1">
+                Configure your event check-in system and import attendee data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <CSVImport onImportComplete={refreshData} />
+              
+              <div className="border-t border-continental-gray3 pt-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-continental-black">Database Status</h3>
+                  <div className="space-y-2">
+                    <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
+                    <p className="text-sm text-continental-gray1">Provider: Supabase</p>
+                    <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case "profile":
+        return (
+          <div className="flex justify-center">
+            <UserProfile />
+          </div>
+        );
+      default:
+        return <Dashboard attendees={attendees} stats={stats} />;
+    }
+  };
+
+  const getCurrentViewTitle = () => {
+    const item = menuItems.find(item => item.id === currentView);
+    return item ? item.label : "Dashboard";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver font-continental">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with Continental Branding */}
-        <div className="flex justify-between items-start mb-8">
+        {/* Header with Continental Branding and Hamburger Menu */}
+        <div className="flex justify-between items-center mb-8">
+          {/* Hamburger Menu */}
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] bg-continental-white">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-4 border-b border-continental-gray3">
+                  <h2 className="text-lg font-semibold text-continental-black">Navigation</h2>
+                </div>
+                <nav className="flex-1 py-4">
+                  <div className="space-y-2">
+                    {menuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleMenuItemClick(item.id)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                            currentView === item.id
+                              ? 'bg-continental-yellow text-continental-black font-medium'
+                              : 'text-continental-gray1 hover:bg-continental-gray4 hover:text-continental-black'
+                          }`}
+                        >
+                          <Icon className="h-5 w-5" />
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Continental Logo and Title */}
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="p-3 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10">
@@ -61,7 +167,7 @@ const Index = () => {
           </div>
           
           {/* User Menu */}
-          <div className="flex items-center gap-2 ml-4">
+          <div className="flex items-center gap-2">
             <div className="text-right">
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-continental-gray1`}>
                 {profile?.full_name || user?.email}
@@ -80,6 +186,11 @@ const Index = () => {
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+
+        {/* Current View Title */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-continental-black">{getCurrentViewTitle()}</h2>
         </div>
 
         {/* Stats Overview with Continental Colors */}
@@ -133,139 +244,10 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Main Content with Continental Styling */}
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className={`${isMobile ? 'grid grid-cols-3 gap-1 h-auto p-1' : 'grid w-full grid-cols-6'} bg-continental-white shadow-md border border-continental-gray3`}>
-            <TabsTrigger 
-              value="dashboard" 
-              className={`${isMobile ? 'flex flex-col items-center gap-1 px-2 py-2 text-xs' : ''} data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium`}
-            >
-              {isMobile && <QrCode className="h-4 w-4" />}
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger 
-              value="scanner" 
-              className={`${isMobile ? 'flex flex-col items-center gap-1 px-2 py-2 text-xs' : ''} data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium`}
-            >
-              {isMobile && <QrCode className="h-4 w-4" />}
-              QR Scanner
-            </TabsTrigger>
-            <TabsTrigger 
-              value="attendees" 
-              className={`${isMobile ? 'flex flex-col items-center gap-1 px-2 py-2 text-xs' : ''} data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium`}
-            >
-              {isMobile && <Users className="h-4 w-4" />}
-              Attendees
-            </TabsTrigger>
-            {!isMobile && (
-              <>
-                <TabsTrigger value="qr-sender" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
-                  Send QR Codes
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
-                  Settings
-                </TabsTrigger>
-                <TabsTrigger value="profile" className="data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium">
-                  <User className="h-4 w-4 mr-1" />
-                  Profile
-                </TabsTrigger>
-              </>
-            )}
-            {isMobile && (
-              <TabsTrigger 
-                value="more" 
-                className="flex flex-col items-center gap-1 px-2 py-2 text-xs data-[state=active]:bg-continental-yellow data-[state=active]:text-continental-black text-continental-gray1 font-medium"
-              >
-                <Menu className="h-4 w-4" />
-                More
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="dashboard">
-            <Dashboard attendees={attendees} stats={stats} />
-          </TabsContent>
-
-          <TabsContent value="scanner">
-            <QRScanner onCheckIn={handleCheckIn} attendees={attendees} />
-          </TabsContent>
-
-          <TabsContent value="attendees">
-            <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} />
-          </TabsContent>
-
-          {!isMobile && (
-            <>
-              <TabsContent value="qr-sender">
-                <QRCodeSender attendees={attendees} onRefresh={refreshData} />
-              </TabsContent>
-
-              <TabsContent value="settings">
-                <Card className="shadow-lg border-0 bg-continental-white">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-continental-black">System Settings</CardTitle>
-                    <CardDescription className="text-continental-gray1">
-                      Configure your event check-in system and import attendee data
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <CSVImport onImportComplete={refreshData} />
-                    
-                    <div className="border-t border-continental-gray3 pt-6">
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-continental-black">Database Status</h3>
-                        <div className="space-y-2">
-                          <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
-                          <p className="text-sm text-continental-gray1">Provider: Supabase</p>
-                          <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="profile">
-                <div className="flex justify-center">
-                  <UserProfile />
-                </div>
-              </TabsContent>
-            </>
-          )}
-
-          {isMobile && (
-            <TabsContent value="more">
-              <div className="space-y-4">
-                <Card className="shadow-lg border-0 bg-continental-white">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-continental-black">Additional Options</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Tabs defaultValue="qr-sender" className="space-y-4">
-                      <TabsList className="grid w-full grid-cols-3 bg-continental-gray4">
-                        <TabsTrigger value="qr-sender" className="text-xs">QR Codes</TabsTrigger>
-                        <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
-                        <TabsTrigger value="profile" className="text-xs">Profile</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="qr-sender">
-                        <QRCodeSender attendees={attendees} onRefresh={refreshData} />
-                      </TabsContent>
-                      
-                      <TabsContent value="settings">
-                        <CSVImport onImportComplete={refreshData} />
-                      </TabsContent>
-                      
-                      <TabsContent value="profile">
-                        <UserProfile />
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          )}
-        </Tabs>
+        {/* Main Content */}
+        <div className="space-y-6">
+          {renderCurrentView()}
+        </div>
       </div>
     </div>
   );
