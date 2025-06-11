@@ -19,6 +19,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           employee_number: string | null
+          event_id: string | null
           form_id: number | null
           full_name: string
           id: string
@@ -37,6 +38,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           employee_number?: string | null
+          event_id?: string | null
           form_id?: number | null
           full_name: string
           id?: string
@@ -55,6 +57,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           employee_number?: string | null
+          event_id?: string | null
           form_id?: number | null
           full_name?: string
           id?: string
@@ -64,7 +67,95 @@ export type Database = {
           updated_at?: string | null
           vegetarian_vegan_option?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_date: string
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          start_time: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          start_time?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          start_time?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
         Relationships: []
+      }
+      field_mappings: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          field_name: string
+          field_type: string | null
+          id: string
+          is_required: boolean | null
+          source_field_name: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          field_name: string
+          field_type?: string | null
+          id?: string
+          is_required?: boolean | null
+          source_field_name: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          field_name?: string
+          field_type?: string | null
+          id?: string
+          is_required?: boolean | null
+          source_field_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_mappings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

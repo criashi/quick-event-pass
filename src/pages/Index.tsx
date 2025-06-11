@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X } from "lucide-react";
+import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X, Calendar } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import Dashboard from "@/components/Dashboard";
@@ -11,6 +11,7 @@ import AttendeeList from "@/components/AttendeeList";
 import CSVImport from "@/components/CSVImport";
 import UserProfile from "@/components/auth/UserProfile";
 import QRCodeSender from "@/components/QRCodeSender";
+import EventSetup from "@/components/EventSetup";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -33,6 +34,7 @@ const Index = () => {
     { id: "scanner", label: "QR Scanner", icon: QrCode },
     { id: "attendees", label: "Attendees", icon: Users },
     { id: "qr-sender", label: "Send QR Codes", icon: QrCode },
+    { id: "event-setup", label: "Event Setup", icon: Calendar },
     { id: "settings", label: "Settings", icon: Menu },
     { id: "profile", label: "Profile", icon: User },
   ];
@@ -63,6 +65,8 @@ const Index = () => {
         return <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} />;
       case "qr-sender":
         return <QRCodeSender attendees={attendees} onRefresh={refreshData} />;
+      case "event-setup":
+        return <EventSetup />;
       case "settings":
         return (
           <Card className="shadow-lg border-0 bg-continental-white">
