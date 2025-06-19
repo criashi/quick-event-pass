@@ -68,7 +68,7 @@ const CSVImport = ({ onImportComplete, currentEvent }: CSVImportProps) => {
       vegetarian_vegan_option: ['vegetarian_vegan_option', 'Dietary Requirements', 'diet', 'dietary']
     };
 
-    const mapped: Record<string, any> = {
+    const mapped: any = {
       checked_in: false,
       event_id: currentEvent?.id || null
     };
@@ -82,12 +82,20 @@ const CSVImport = ({ onImportComplete, currentEvent }: CSVImportProps) => {
       }
     }
 
-    // Ensure required fields
+    // Ensure required fields have default values
     if (!mapped.full_name) {
       mapped.full_name = mapped.name || 'Unknown';
     }
     if (!mapped.continental_email) {
       mapped.continental_email = mapped.email || '';
+    }
+
+    // Ensure required fields are not empty strings
+    if (!mapped.full_name || mapped.full_name.trim() === '') {
+      mapped.full_name = 'Unknown';
+    }
+    if (!mapped.continental_email || mapped.continental_email.trim() === '') {
+      mapped.continental_email = 'no-email@example.com';
     }
 
     return mapped;
@@ -135,7 +143,7 @@ const CSVImport = ({ onImportComplete, currentEvent }: CSVImportProps) => {
 
           const { error } = await supabase
             .from('attendees')
-            .insert([mappedData]);
+            .insert(mappedData);
 
           if (error) {
             console.error('Error inserting row:', error, mappedData);
