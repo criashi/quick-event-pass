@@ -3,26 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Attendee, EventStats } from "@/types/attendee";
 import { useToast } from "@/hooks/use-toast";
 
-export const useSupabaseEventData = (eventId?: string) => {
+export const useSupabaseEventData = () => {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchAttendees = async () => {
     try {
-      console.log('Fetching attendees for event:', eventId);
-      
-      let query = supabase
+      const { data, error } = await supabase
         .from('attendees')
         .select('*')
         .order('created_at', { ascending: false });
-
-      // Filter by event ID if provided
-      if (eventId) {
-        query = query.eq('event_id', eventId);
-      }
-
-      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching attendees:', error);
@@ -34,7 +25,6 @@ export const useSupabaseEventData = (eventId?: string) => {
         return;
       }
 
-      console.log('Fetched attendees:', data?.length || 0);
       setAttendees(data || []);
     } catch (error) {
       console.error('Error:', error);
@@ -97,14 +87,12 @@ export const useSupabaseEventData = (eventId?: string) => {
   useEffect(() => {
     const initializeData = async () => {
       await fetchAttendees();
-      // Only fix bad record if we're not filtering by event (to avoid running on every event switch)
-      if (!eventId) {
-        await fixBadRecord();
-      }
+      // Automatically fix the bad record on component mount
+      await fixBadRecord();
     };
     
     initializeData();
-  }, [eventId]); // Add eventId as dependency
+  }, []);
 
   const checkInAttendee = async (attendeeId: string): Promise<boolean> => {
     try {
