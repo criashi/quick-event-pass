@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-reac
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Attendee } from "@/types/attendee";
+import { useEventManagement } from "@/hooks/useEventManagement";
 
 interface CSVImportProps {
   onImportComplete: () => void;
@@ -26,6 +26,7 @@ interface ValidatedAttendee {
   business_area?: string;
   vegetarian_vegan_option?: string;
   checked_in: boolean;
+  event_id?: string;
 }
 
 const CSVImport = ({ onImportComplete }: CSVImportProps) => {
@@ -33,6 +34,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { currentEvent } = useEventManagement();
 
   const parseCSV = (csvText: string): any[] => {
     const lines = csvText.trim().split('\n');
@@ -98,6 +100,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
 
     const normalized: Partial<ValidatedAttendee> = {
       checked_in: false,
+      event_id: currentEvent?.id, // Associate with current event
     };
 
     // Map CSV fields to our structure
@@ -140,6 +143,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       business_area: normalized.business_area,
       vegetarian_vegan_option: normalized.vegetarian_vegan_option,
       checked_in: false,
+      event_id: normalized.event_id,
     };
   };
 
@@ -197,6 +201,15 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    if (!currentEvent) {
+      toast({
+        title: "No Active Event",
+        description: "Please set up an active event before importing attendees",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!file.name.toLowerCase().endsWith('.csv')) {
       toast({
         title: "Invalid File",
@@ -226,10 +239,11 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
         return;
       }
 
-      // Get existing attendees to check for duplicates
+      // Get existing attendees to check for duplicates (scoped to current event)
       const { data: existingAttendees, error: fetchError } = await supabase
         .from('attendees')
-        .select('continental_email, full_name');
+        .select('continental_email, full_name')
+        .eq('event_id', currentEvent.id);
 
       if (fetchError) {
         throw fetchError;
@@ -252,11 +266,11 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
 
           // Check if validation failed
           if (!attendee) {
-            result.errors.push(`Invalid or missing required fields for: ${attendee?.full_name || 'Unknown'}`);
+            result.errors.push(`Invalid or missing required fields for: ${row.name || row['Full Name'] || 'Unknown'}`);
             continue;
           }
 
-          // Check for duplicates
+          // Check for duplicates within the current event
           const emailLower = attendee.continental_email.toLowerCase();
           const nameLower = attendee.full_name.toLowerCase();
           
@@ -288,7 +302,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       if (result.imported > 0) {
         toast({
           title: "Import Successful",
-          description: `Imported ${result.imported} new attendees, skipped ${result.skipped} duplicates`,
+          description: `Imported ${result.imported} new attendees for ${currentEvent.name}, skipped ${result.skipped} duplicates`,
         });
       } else if (result.skipped > 0) {
         toast({
@@ -321,12 +335,29 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
           <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
             <Upload className="h-5 w-5 text-blue-600" />
             CSV Import
+            {currentEvent && (
+              <Badge variant="secondary" className="ml-2">
+                {currentEvent.name}
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
-            Import attendee data from CSV files. Duplicate entries will be automatically skipped.
+            Import attendee data from CSV files for the current active event. Duplicate entries will be automatically skipped.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {!currentEvent && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <p className="text-yellow-800 font-medium">No Active Event</p>
+              </div>
+              <p className="text-yellow-700 text-sm mt-1">
+                Please set up and activate an event in Event Setup before importing attendees.
+              </p>
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -341,12 +372,12 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
                 type="file"
                 accept=".csv"
                 onChange={handleFileSelect}
-                disabled={isImporting}
+                disabled={isImporting || !currentEvent}
                 className="hidden"
               />
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isImporting}
+                disabled={isImporting || !currentEvent}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {isImporting ? (
@@ -371,7 +402,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
                 <li>• First row should contain column headers</li>
                 <li>• Supports Microsoft Forms exports with long column names</li>
                 <li>• Data validation prevents malformed records</li>
-                <li>• Duplicate entries (same email or name) will be skipped</li>
+                <li>• Duplicate entries (same email or name) within the event will be skipped</li>
               </ul>
             </div>
           </div>

@@ -1,19 +1,29 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Attendee, EventStats } from "@/types/attendee";
 import { useToast } from "@/hooks/use-toast";
+import { useEventManagement } from "@/hooks/useEventManagement";
 
 export const useSupabaseEventData = () => {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { currentEvent } = useEventManagement();
 
   const fetchAttendees = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('attendees')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // If there's a current event, filter attendees by event_id
+      if (currentEvent?.id) {
+        query = query.eq('event_id', currentEvent.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching attendees:', error);
@@ -62,6 +72,11 @@ export const useSupabaseEventData = () => {
           updates.employee_number = badRecord.business_area;
         }
 
+        // Associate with current event if available
+        if (currentEvent?.id) {
+          updates.event_id = currentEvent.id;
+        }
+
         const { error: updateError } = await supabase
           .from('attendees')
           .update(updates)
@@ -84,6 +99,7 @@ export const useSupabaseEventData = () => {
     }
   };
 
+  // Re-fetch attendees when current event changes
   useEffect(() => {
     const initializeData = async () => {
       await fetchAttendees();
@@ -92,7 +108,7 @@ export const useSupabaseEventData = () => {
     };
     
     initializeData();
-  }, []);
+  }, [currentEvent?.id]); // Add currentEvent.id as dependency
 
   const checkInAttendee = async (attendeeId: string): Promise<boolean> => {
     try {
@@ -163,6 +179,7 @@ export const useSupabaseEventData = () => {
     loading,
     checkInAttendee,
     getStats,
-    refreshData: fetchAttendees
+    refreshData: fetchAttendees,
+    currentEvent
   };
 };
