@@ -6,11 +6,11 @@ import QRScanner from "@/components/QRScanner";
 import QRCodeSender from "@/components/QRCodeSender";
 import CSVImport from "@/components/CSVImport";
 import EventSetup from "@/components/EventSetup";
-import AppHeader from "@/components/AppHeader";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 import { useEventManagement } from "@/hooks/useEventManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, QrCode, Settings, Upload, Mail } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Users, QrCode, Settings, Upload, Mail } from "lucide-react";
 
 const Index = () => {
   const { currentEvent, loading: eventLoading } = useEventManagement();
@@ -35,9 +35,35 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader currentEvent={currentEvent} />
-      
       <div className="container mx-auto p-6">
+        {/* Event Header */}
+        {currentEvent && (
+          <Card className="mb-6 bg-gradient-to-r from-continental-light-green to-continental-dark-green text-white">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">{currentEvent.name}</CardTitle>
+                  <CardDescription className="text-continental-white/90">
+                    {new Date(currentEvent.event_date).toLocaleDateString()} • {currentEvent.location}
+                  </CardDescription>
+                </div>
+                <Calendar className="h-8 w-8" />
+              </div>
+            </CardHeader>
+          </Card>
+        )}
+
+        {!currentEvent && (
+          <Card className="mb-6 border-orange-200 bg-orange-50">
+            <CardHeader>
+              <CardTitle className="text-orange-800">No Active Event</CardTitle>
+              <CardDescription className="text-orange-600">
+                Please set up an event in the Event Setup tab to get started.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
