@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, QrCode, Send, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Mail, QrCode, Send, CheckCircle, XCircle, Loader2, Search } from "lucide-react";
 import { Attendee } from "@/types/attendee";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,13 +24,22 @@ interface EmailResult {
 
 const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [sending, setSending] = useState(false);
   const [emailResults, setEmailResults] = useState<EmailResult[]>([]);
   const [showResults, setShowResults] = useState(false);
 
+  // Filter attendees based on search term
+  const filteredAttendees = attendees.filter(attendee => 
+    attendee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    attendee.continental_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (attendee.employee_number && attendee.employee_number.includes(searchTerm)) ||
+    (attendee.business_area && attendee.business_area.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedAttendees(attendees.map(a => a.id));
+      setSelectedAttendees(filteredAttendees.map(a => a.id));
     } else {
       setSelectedAttendees([]);
     }
@@ -93,55 +103,56 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
   const sentAttendees = attendees.filter(a => a.qr_code_data);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-2 max-w-full">
       {/* Send QR Codes Card */}
       <Card className="shadow-lg border-0">
-        <CardHeader>
-          <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
-            <QrCode className="h-6 w-6 text-blue-600" />
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg md:text-xl text-gray-800 flex items-center gap-2">
+            <QrCode className="h-5 w-5 text-blue-600" />
             Send QR Codes
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             Generate and send personalized QR codes to registered attendees via email
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {/* Quick Actions */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button 
               onClick={() => sendQRCodes(true)}
               disabled={sending || attendees.length === 0}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 flex-1"
             >
               {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Mail className="mr-2 h-4 w-4" />
-              Send to All ({attendees.length})
+              <span className="text-sm">Send to All ({attendees.length})</span>
             </Button>
             
             <Button 
               onClick={() => sendQRCodes(false)}
               disabled={sending || selectedAttendees.length === 0}
               variant="outline"
+              className="flex-1"
             >
               {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Send className="mr-2 h-4 w-4" />
-              Send to Selected ({selectedAttendees.length})
+              <span className="text-sm">Send Selected ({selectedAttendees.length})</span>
             </Button>
           </div>
 
           {/* Status Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm font-medium text-blue-600">Total Attendees</p>
-              <p className="text-2xl font-bold text-blue-800">{attendees.length}</p>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-xs font-medium text-blue-600">Total</p>
+              <p className="text-lg font-bold text-blue-800">{attendees.length}</p>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-sm font-medium text-green-600">QR Codes Sent</p>
-              <p className="text-2xl font-bold text-green-800">{sentAttendees.length}</p>
+            <div className="bg-green-50 p-3 rounded-lg">
+              <p className="text-xs font-medium text-green-600">Sent</p>
+              <p className="text-lg font-bold text-green-800">{sentAttendees.length}</p>
             </div>
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <p className="text-sm font-medium text-orange-600">Pending</p>
-              <p className="text-2xl font-bold text-orange-800">{unsentAttendees.length}</p>
+            <div className="bg-orange-50 p-3 rounded-lg">
+              <p className="text-xs font-medium text-orange-600">Pending</p>
+              <p className="text-lg font-bold text-orange-800">{unsentAttendees.length}</p>
             </div>
           </div>
         </CardContent>
@@ -149,54 +160,74 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
 
       {/* Attendee Selection */}
       <Card className="shadow-lg border-0">
-        <CardHeader>
-          <CardTitle className="text-xl text-gray-800">Select Attendees</CardTitle>
-          <CardDescription>Choose specific attendees to send QR codes to</CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-gray-800">Select Attendees</CardTitle>
+          <CardDescription className="text-sm">Search and choose specific attendees to send QR codes to</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search by name, email, employee number, or business area..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
             {/* Select All */}
-            <div className="flex items-center space-x-2 pb-4 border-b">
+            <div className="flex items-center space-x-2 pb-3 border-b">
               <Checkbox
                 id="select-all"
-                checked={selectedAttendees.length === attendees.length}
+                checked={selectedAttendees.length === filteredAttendees.length && filteredAttendees.length > 0}
                 onCheckedChange={handleSelectAll}
               />
               <label htmlFor="select-all" className="text-sm font-medium">
-                Select All Attendees ({attendees.length})
+                Select All Filtered ({filteredAttendees.length})
               </label>
             </div>
 
             {/* Attendee List */}
             <div className="max-h-64 overflow-y-auto space-y-2">
-              {attendees.map((attendee) => (
+              {filteredAttendees.map((attendee) => (
                 <div key={attendee.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
                     <Checkbox
                       id={attendee.id}
                       checked={selectedAttendees.includes(attendee.id)}
                       onCheckedChange={(checked) => handleSelectAttendee(attendee.id, checked as boolean)}
                     />
-                    <div>
-                      <p className="font-medium text-gray-900">{attendee.full_name}</p>
-                      <p className="text-sm text-gray-600">{attendee.continental_email}</p>
-                      <p className="text-xs text-gray-500">{attendee.business_area}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 text-sm truncate">{attendee.full_name}</p>
+                      <p className="text-xs text-gray-600 truncate">{attendee.continental_email}</p>
+                      {attendee.business_area && (
+                        <p className="text-xs text-gray-500 truncate">{attendee.business_area}</p>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex-shrink-0 ml-2">
                     {attendee.qr_code_data ? (
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />
-                        QR Sent
+                        Sent
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
                         Pending
                       </Badge>
                     )}
                   </div>
                 </div>
               ))}
+              
+              {filteredAttendees.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <Search className="h-8 w-8 mx-auto mb-2" />
+                  <p className="text-sm">No attendees found matching your search</p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -205,28 +236,28 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
       {/* Email Results */}
       {showResults && emailResults.length > 0 && (
         <Card className="shadow-lg border-0">
-          <CardHeader>
-            <CardTitle className="text-xl text-gray-800">Email Results</CardTitle>
-            <CardDescription>Status of QR code emails sent</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-gray-800">Email Results</CardTitle>
+            <CardDescription className="text-sm">Status of QR code emails sent</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {emailResults.map((result, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">{result.email}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 text-sm truncate">{result.email}</p>
                     {result.error && (
-                      <p className="text-sm text-red-600">{result.error}</p>
+                      <p className="text-xs text-red-600 truncate">{result.error}</p>
                     )}
                   </div>
-                  <div>
+                  <div className="flex-shrink-0 ml-2">
                     {result.success ? (
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Sent
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="bg-red-100 text-red-800">
+                      <Badge variant="secondary" className="bg-red-100 text-red-800 text-xs">
                         <XCircle className="h-3 w-3 mr-1" />
                         Failed
                       </Badge>
