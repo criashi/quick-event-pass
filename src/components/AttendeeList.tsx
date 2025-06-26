@@ -42,13 +42,13 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
       {/* Filters */}
       <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle className="text-2xl text-gray-800">Continental Employee Management</CardTitle>
+          <CardTitle className="text-xl md:text-2xl text-gray-800">Continental Employee Management</CardTitle>
           <CardDescription>
             Search and filter event attendees, view check-in status
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -58,34 +58,36 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
                 className="pl-10"
               />
             </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="md:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Attendees</SelectItem>
-                <SelectItem value="checked-in">Checked In</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterBusinessArea} onValueChange={setFilterBusinessArea}>
-              <SelectTrigger className="md:w-48">
-                <SelectValue placeholder="Filter by business area" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Business Areas</SelectItem>
-                {businessAreas.map(area => (
-                  <SelectItem key={area} value={area!}>{area}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Attendees</SelectItem>
+                  <SelectItem value="checked-in">Checked In</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterBusinessArea} onValueChange={setFilterBusinessArea}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter by business area" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Business Areas</SelectItem>
+                  {businessAreas.map(area => (
+                    <SelectItem key={area} value={area!}>{area}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
-          <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600">
             <span>Showing {filteredAttendees.length} of {attendees.length} employees</span>
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              <span>Active filters: {[
+              <span className="text-xs sm:text-sm">Active filters: {[
                 filterStatus !== "all" && filterStatus,
                 filterBusinessArea !== "all" && filterBusinessArea,
                 searchTerm && "search"
@@ -99,58 +101,58 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
       <div className="grid gap-4">
         {filteredAttendees.map((attendee) => (
           <Card key={attendee.id} className="shadow-md border-0 hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-800">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-800 truncate">
                         {attendee.full_name}
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                        <Mail className="h-4 w-4" />
-                        <span>{attendee.continental_email}</span>
+                        <Mail className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{attendee.continental_email}</span>
                       </div>
                       {attendee.employee_number && (
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Building className="h-4 w-4" />
-                          <span>Employee #: {attendee.employee_number}</span>
+                          <Building className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Employee #: {attendee.employee_number}</span>
                         </div>
                       )}
                     </div>
                     <Badge 
                       variant="secondary" 
-                      className={attendee.checked_in ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}
+                      className={`flex-shrink-0 ${attendee.checked_in ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}
                     >
                       {attendee.checked_in ? (
                         <div className="flex items-center gap-1">
                           <CheckCircle className="h-3 w-3" />
-                          Checked In
+                          <span className="text-xs">Checked In</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          Pending
+                          <span className="text-xs">Pending</span>
                         </div>
                       )}
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                    <div className="min-w-0">
                       <span className="font-medium text-gray-700">Business Area:</span>
-                      <p className="text-gray-600">{attendee.business_area || 'Not specified'}</p>
+                      <p className="text-gray-600 truncate">{attendee.business_area || 'Not specified'}</p>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="font-medium text-gray-700">Registration:</span>
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 truncate">
                         {attendee.start_time ? new Date(attendee.start_time).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
                     {attendee.checked_in && attendee.check_in_time && (
-                      <div>
+                      <div className="min-w-0">
                         <span className="font-medium text-gray-700">Check-in Time:</span>
-                        <p className="text-gray-600">{new Date(attendee.check_in_time).toLocaleString()}</p>
+                        <p className="text-gray-600 truncate">{new Date(attendee.check_in_time).toLocaleString()}</p>
                       </div>
                     )}
                   </div>
@@ -158,7 +160,7 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
                   {attendee.vegetarian_vegan_option === 'Yes' && (
                     <div className="mt-3 p-3 bg-green-50 rounded-lg flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-medium text-green-800">Dietary Requirements</p>
                         <p className="text-green-700 text-sm">Vegetarian/Vegan option required</p>
                       </div>
@@ -166,11 +168,11 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
                   )}
                 </div>
 
-                <div className="ml-6">
+                <div className="flex justify-center lg:justify-end">
                   {!attendee.checked_in ? (
                     <Button
                       onClick={() => onCheckIn(attendee.id)}
-                      className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                      className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Check In
