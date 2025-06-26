@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -223,11 +222,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
     };
   }, []);
 
-  // Simulate QR code scanning for demo purposes
-  const simulateQRScan = async (mockId: string) => {
-    await processQRCode(mockId);
-  };
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -348,24 +342,6 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
                 <li>• Move the QR code away after scanning to avoid duplicates</li>
               </ul>
             </div>
-
-            {/* Demo Buttons for Testing */}
-            <div className="border-t pt-4">
-              <p className="text-sm text-gray-600 mb-3">Demo - Test with sample attendees:</p>
-              <div className="grid grid-cols-2 gap-2">
-                {attendees.slice(0, 4).map((attendee, index) => (
-                  <Button 
-                    key={attendee.id}
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => simulateQRScan(attendee.id)}
-                    disabled={isScanning}
-                  >
-                    Scan {attendee.full_name.split(' ')[0]}
-                  </Button>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -439,9 +415,8 @@ const QRScanner = ({ onCheckIn, attendees }: QRScannerProps) => {
               </div>
             ) : (
               <div className="text-center py-12 text-gray-500">
-                <Scan className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-lg font-medium">Ready to Scan</p>
-                <p className="text-sm">Point the camera at a QR code to begin</p>
+                <div className="text-lg font-medium mb-2">Ready to Scan</div>
+                <p className="text-sm">Start the camera and point it at a QR code to begin check-in</p>
               </div>
             )}
           </CardContent>
