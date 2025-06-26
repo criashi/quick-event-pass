@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,11 @@ const EventSetup = () => {
   const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
   const handleSetActiveEvent = async (eventId: string) => {
-    await updateEvent(eventId, { is_active: true });
+    const success = await updateEvent(eventId, { is_active: true });
+    if (success) {
+      // Refresh the page to ensure all components update with the new active event
+      window.location.reload();
+    }
   };
 
   const handleEditEvent = (event: Event) => {
