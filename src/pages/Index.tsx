@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
-  const { attendees, loading, checkInAttendee, getStats, refreshData } = useSupabaseEventData();
+  const { attendees, loading, checkInAttendee, getStats, refreshData, currentEvent } = useSupabaseEventData();
   const { user, profile, signOut } = useAuth();
   const isMobile = useIsMobile();
   const stats = getStats();
@@ -58,7 +58,7 @@ const Index = () => {
   const renderCurrentView = () => {
     switch (currentView) {
       case "dashboard":
-        return <Dashboard attendees={attendees} stats={stats} />;
+        return <Dashboard attendees={attendees} stats={stats} currentEvent={currentEvent} />;
       case "scanner":
         return <QRScanner onCheckIn={handleCheckIn} attendees={attendees} />;
       case "attendees":
@@ -86,6 +86,7 @@ const Index = () => {
                     <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
                     <p className="text-sm text-continental-gray1">Provider: Supabase</p>
                     <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
+                    <p className="text-sm text-continental-gray1">Active Event: {currentEvent?.name || 'None'}</p>
                   </div>
                 </div>
               </div>
@@ -99,7 +100,7 @@ const Index = () => {
           </div>
         );
       default:
-        return <Dashboard attendees={attendees} stats={stats} />;
+        return <Dashboard attendees={attendees} stats={stats} currentEvent={currentEvent} />;
     }
   };
 
