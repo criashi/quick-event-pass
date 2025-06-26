@@ -141,28 +141,6 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
                   ></div>
                 </div>
               </div>
-
-              {/* Event Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-800">Event Date</p>
-                    <p className="text-sm text-gray-600">
-                      {currentEvent ? new Date(currentEvent.event_date).toLocaleDateString() : 'No active event'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
-                  <MapPin className="h-5 w-5 text-purple-600" />
-                  <div>
-                    <p className="font-medium text-gray-800">Location</p>
-                    <p className="text-sm text-gray-600">
-                      {currentEvent?.location || 'No location set'}
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
