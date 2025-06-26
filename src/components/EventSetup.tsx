@@ -2,24 +2,32 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Settings, Calendar, MapPin, Clock } from "lucide-react";
+import { Plus, Settings, Calendar, MapPin, Clock, Trash2 } from "lucide-react";
 import { useEventManagement } from "@/hooks/useEventManagement";
 import { Event } from "@/types/event";
 import EventForm from "./EventForm";
 import FieldMappingManager from "./FieldMappingManager";
+import EditEventDialog from "./EditEventDialog";
+import DeleteEventDialog from "./DeleteEventDialog";
 
 const EventSetup = () => {
   const { events, currentEvent, fieldMappings, loading, updateEvent } = useEventManagement();
   const [showEventForm, setShowEventForm] = useState(false);
   const [showFieldMapping, setShowFieldMapping] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
   const handleSetActiveEvent = async (eventId: string) => {
     await updateEvent(eventId, { is_active: true });
+  };
+
+  const handleEditEvent = (event: Event) => {
+    setEditingEvent(event);
+  };
+
+  const handleDeleteEvent = (event: Event) => {
+    setDeletingEvent(event);
   };
 
   if (loading) {
@@ -128,16 +136,36 @@ const EventSetup = () => {
                         </span>
                       )}
                     </div>
+                    {event.description && (
+                      <p className="text-sm text-gray-500 mt-1">{event.description}</p>
+                    )}
                   </div>
-                  {!event.is_active && (
+                  <div className="flex items-center gap-2">
                     <Button
-                      onClick={() => handleSetActiveEvent(event.id)}
+                      onClick={() => handleEditEvent(event)}
                       size="sm"
                       variant="outline"
                     >
-                      Set Active
+                      Edit
                     </Button>
-                  )}
+                    {!event.is_active && (
+                      <Button
+                        onClick={() => handleSetActiveEvent(event.id)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Set Active
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => handleDeleteEvent(event)}
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -156,6 +184,24 @@ const EventSetup = () => {
           event={currentEvent}
           fieldMappings={fieldMappings}
           onClose={() => setShowFieldMapping(false)} 
+        />
+      )}
+
+      {/* Edit Event Dialog */}
+      {editingEvent && (
+        <EditEventDialog
+          event={editingEvent}
+          open={!!editingEvent}
+          onClose={() => setEditingEvent(null)}
+        />
+      )}
+
+      {/* Delete Event Dialog */}
+      {deletingEvent && (
+        <DeleteEventDialog
+          event={deletingEvent}
+          open={!!deletingEvent}
+          onClose={() => setDeletingEvent(null)}
         />
       )}
     </div>
