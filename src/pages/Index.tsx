@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X, Calendar } from "lucide-react";
+import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X, Calendar, Upload } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import Dashboard from "@/components/Dashboard";
@@ -35,7 +35,7 @@ const Index = () => {
     { id: "attendees", label: "Attendees", icon: Users },
     { id: "qr-sender", label: "Send QR Codes", icon: QrCode },
     { id: "event-setup", label: "Event Setup", icon: Calendar },
-    { id: "settings", label: "Settings", icon: Menu },
+    { id: "settings", label: "Import Attendees", icon: Upload },
     { id: "profile", label: "Profile", icon: User },
   ];
 
@@ -71,9 +71,9 @@ const Index = () => {
         return (
           <Card className="shadow-lg border-0 bg-continental-white">
             <CardHeader>
-              <CardTitle className="text-2xl text-continental-black">System Settings</CardTitle>
+              <CardTitle className="text-2xl text-continental-black">Import Attendees</CardTitle>
               <CardDescription className="text-continental-gray1">
-                Configure your event check-in system and import attendee data
+                Import attendee data from CSV files for your events
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
