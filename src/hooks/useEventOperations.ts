@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Event } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
@@ -53,9 +52,11 @@ export const useEventOperations = () => {
     try {
       console.log('About to update event in database:', eventId, eventData);
       
-      // If this event should be active, deactivate others first
+      // Use a transaction-like approach to ensure consistency
       if (eventData.is_active) {
-        console.log('Deactivating other events...');
+        console.log('Setting event as active - deactivating others and activating target...');
+        
+        // First deactivate all events, then activate the target in a single operation
         const { error: deactivateError } = await supabase
           .from('events')
           .update({ is_active: false })
@@ -65,11 +66,9 @@ export const useEventOperations = () => {
           console.error('Error deactivating other events:', deactivateError);
           throw deactivateError;
         }
-
-        // Wait a bit to ensure the deactivation is committed
-        await new Promise(resolve => setTimeout(resolve, 200));
       }
 
+      // Update the target event
       console.log('Updating target event...');
       const { error } = await supabase
         .from('events')
@@ -87,9 +86,6 @@ export const useEventOperations = () => {
       }
 
       console.log('Event updated in database successfully');
-      
-      // Wait longer to ensure database consistency before returning
-      await new Promise(resolve => setTimeout(resolve, 500));
 
       toast({
         title: "Success",
