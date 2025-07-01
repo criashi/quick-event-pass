@@ -12,6 +12,8 @@ export const useActiveEvent = () => {
   const fetchActiveEvent = async () => {
     try {
       setLoading(true);
+      console.log('fetchActiveEvent: Fetching active event...');
+      
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -19,13 +21,14 @@ export const useActiveEvent = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching active event:', error);
+        console.error('fetchActiveEvent: Error fetching active event:', error);
         return;
       }
 
+      console.log('fetchActiveEvent: Found active event:', data);
       setActiveEvent(data);
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('fetchActiveEvent: Unexpected error:', error);
     } finally {
       setLoading(false);
     }
@@ -33,6 +36,8 @@ export const useActiveEvent = () => {
 
   const setEventActive = async (eventId: string) => {
     try {
+      console.log('setEventActive: Setting event active:', eventId);
+      
       // First, deactivate all events
       const { error: deactivateError } = await supabase
         .from('events')
@@ -40,7 +45,7 @@ export const useActiveEvent = () => {
         .neq('id', '00000000-0000-0000-0000-000000000000');
 
       if (deactivateError) {
-        console.error('Error deactivating events:', deactivateError);
+        console.error('setEventActive: Error deactivating events:', deactivateError);
         toast({
           title: "Error",
           description: "Failed to update events",
@@ -49,6 +54,8 @@ export const useActiveEvent = () => {
         return false;
       }
 
+      console.log('setEventActive: All events deactivated');
+
       // Then activate the selected event
       const { error: activateError } = await supabase
         .from('events')
@@ -56,7 +63,7 @@ export const useActiveEvent = () => {
         .eq('id', eventId);
 
       if (activateError) {
-        console.error('Error activating event:', activateError);
+        console.error('setEventActive: Error activating event:', activateError);
         toast({
           title: "Error",
           description: "Failed to activate event",
@@ -65,7 +72,9 @@ export const useActiveEvent = () => {
         return false;
       }
 
-      // Refresh the active event
+      console.log('setEventActive: Event activated successfully');
+
+      // Immediately fetch the newly active event
       await fetchActiveEvent();
       
       toast({
@@ -75,7 +84,7 @@ export const useActiveEvent = () => {
 
       return true;
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('setEventActive: Unexpected error:', error);
       toast({
         title: "Error",
         description: "Failed to update event",

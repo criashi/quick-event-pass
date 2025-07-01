@@ -24,15 +24,19 @@ const EventSetup = () => {
   const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
   const handleSetActiveEvent = async (eventId: string) => {
+    console.log('handleSetActiveEvent: Starting to set active event:', eventId);
     const success = await setEventActive(eventId);
     if (success) {
+      console.log('handleSetActiveEvent: Success, refreshing events list...');
       await refetchEvents();
+      console.log('handleSetActiveEvent: Events list refreshed');
     }
   };
 
   const handleEventUpdated = async () => {
-    await refetchEvents();
-    await refetchActive();
+    console.log('handleEventUpdated: Refreshing both events and active event...');
+    await Promise.all([refetchEvents(), refetchActive()]);
+    console.log('handleEventUpdated: Both refreshed');
   };
 
   const handleEditEvent = (event: Event) => {
