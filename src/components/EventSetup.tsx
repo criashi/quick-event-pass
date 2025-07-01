@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,17 +12,19 @@ import EditEventDialog from "./EditEventDialog";
 import DeleteEventDialog from "./DeleteEventDialog";
 
 const EventSetup = () => {
-  const { events, currentEvent, fieldMappings, loading, updateEvent } = useEventManagement();
+  const { events, currentEvent, fieldMappings, loading, updateEvent, refreshEvents } = useEventManagement();
   const [showEventForm, setShowEventForm] = useState(false);
   const [showFieldMapping, setShowFieldMapping] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
   const handleSetActiveEvent = async (eventId: string) => {
+    console.log('Setting active event:', eventId);
     const success = await updateEvent(eventId, { is_active: true });
     if (success) {
-      // Refresh the page to ensure all components update with the new active event
-      window.location.reload();
+      console.log('Event updated successfully, refreshing events...');
+      // Refresh events to get the latest data instead of forcing a page reload
+      await refreshEvents();
     }
   };
 
