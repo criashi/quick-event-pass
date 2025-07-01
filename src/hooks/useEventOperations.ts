@@ -51,14 +51,22 @@ export const useEventOperations = () => {
 
   const updateEvent = async (eventId: string, eventData: Partial<Event>) => {
     try {
+      console.log('About to update event in database:', eventId, eventData);
+      
       // If this event should be active, deactivate others first
       if (eventData.is_active) {
-        await supabase
+        console.log('Deactivating other events...');
+        const { error: deactivateError } = await supabase
           .from('events')
           .update({ is_active: false })
           .neq('id', eventId);
+          
+        if (deactivateError) {
+          console.error('Error deactivating other events:', deactivateError);
+        }
       }
 
+      console.log('Updating target event...');
       const { error } = await supabase
         .from('events')
         .update({ ...eventData, updated_at: new Date().toISOString() })
@@ -74,10 +82,14 @@ export const useEventOperations = () => {
         return false;
       }
 
+      console.log('Event updated in database successfully');
       toast({
         title: "Success",
         description: "Event updated successfully",
       });
+
+      // Add a small delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       return true;
     } catch (error) {
