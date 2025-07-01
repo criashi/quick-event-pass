@@ -75,6 +75,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_attendees_event_id"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
         ]
       }
       events: {
@@ -150,6 +157,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "field_mappings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_field_mappings_event_id"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
