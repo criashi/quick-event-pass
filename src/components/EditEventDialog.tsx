@@ -7,16 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Event } from "@/types/event";
-import { useEventManagement } from "@/hooks/useEventManagement";
+import { useEventCRUD } from "@/hooks/useEventCRUD";
 
 interface EditEventDialogProps {
   event: Event;
   open: boolean;
   onClose: () => void;
+  onEventUpdated: () => void;
 }
 
-const EditEventDialog = ({ event, open, onClose }: EditEventDialogProps) => {
-  const { updateEvent } = useEventManagement();
+const EditEventDialog = ({ event, open, onClose, onEventUpdated }: EditEventDialogProps) => {
+  const { updateEvent } = useEventCRUD();
   const [formData, setFormData] = useState({
     name: event.name,
     description: event.description || '',
@@ -36,6 +37,7 @@ const EditEventDialog = ({ event, open, onClose }: EditEventDialogProps) => {
     const success = await updateEvent(event.id, formData);
     
     if (success) {
+      onEventUpdated();
       onClose();
     }
     

@@ -6,16 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle } from "lucide-react";
 import { Event } from "@/types/event";
-import { useEventManagement } from "@/hooks/useEventManagement";
+import { useEventCRUD } from "@/hooks/useEventCRUD";
 
 interface DeleteEventDialogProps {
   event: Event;
   open: boolean;
   onClose: () => void;
+  onEventDeleted: () => void;
 }
 
-const DeleteEventDialog = ({ event, open, onClose }: DeleteEventDialogProps) => {
-  const { deleteEvent } = useEventManagement();
+const DeleteEventDialog = ({ event, open, onClose, onEventDeleted }: DeleteEventDialogProps) => {
+  const { deleteEvent } = useEventCRUD();
   const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,6 +29,7 @@ const DeleteEventDialog = ({ event, open, onClose }: DeleteEventDialogProps) => 
     const success = await deleteEvent(event.id);
     
     if (success) {
+      onEventDeleted();
       onClose();
       setConfirmText('');
     }

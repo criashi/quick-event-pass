@@ -4,28 +4,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Settings, Calendar, MapPin, Clock, Trash2 } from "lucide-react";
-import { useEventManagement } from "@/hooks/useEventManagement";
 import { Event } from "@/types/event";
 import EventForm from "./EventForm";
 import FieldMappingManager from "./FieldMappingManager";
 import EditEventDialog from "./EditEventDialog";
 import DeleteEventDialog from "./DeleteEventDialog";
+import { useEventList } from "@/hooks/useEventList";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useFieldMappings } from "@/hooks/useFieldMappings";
 
 const EventSetup = () => {
-  const { events, currentEvent, fieldMappings, loading, updateEvent, refreshEvents } = useEventManagement();
+  const { events, loading: eventsLoading, refetch: refetchEvents } = useEventList();
+  const { activeEvent, loading: activeLoading, setEventActive, refetch: refetchActive } = useActiveEvent();
+  const { fieldMappings } = useFieldMappings(activeEvent?.id);
+  
   const [showEventForm, setShowEventForm] = useState(false);
   const [showFieldMapping, setShowFieldMapping] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
   const handleSetActiveEvent = async (eventId: string) => {
-    console.log('Setting active event:', eventId);
-    const success = await updateEvent(eventId, { is_active: true });
+    const success = await setEventActive(eventId);
     if (success) {
-      console.log('Event updated successfully, refreshing events...');
-      // Refresh events to get the latest data instead of forcing a page reload
-      await refreshEvents();
+      await refetchEvents();
     }
+  };
+
+  const handleEventUpdated = async () => {
+    await refetchEvents();
+    await refetchActive();
   };
 
   const handleEditEvent = (event: Event) => {
@@ -36,7 +43,7 @@ const EventSetup = () => {
     setDeletingEvent(event);
   };
 
-  if (loading) {
+  if (eventsLoading || activeLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
@@ -50,12 +57,12 @@ const EventSetup = () => {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Current Active Event */}
-      {currentEvent && (
+      {activeEvent && (
         <Card className="bg-gradient-to-r from-continental-light-green to-continental-dark-green text-white">
           <CardHeader className="pb-3 md:pb-6">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-lg md:text-xl truncate">{currentEvent.name}</CardTitle>
+                <CardTitle className="text-lg md:text-xl truncate">{activeEvent.name}</CardTitle>
                 <Badge variant="secondary" className="bg-continental-yellow text-continental-black mt-2 text-xs">
                   Active Event
                 </Badge>
@@ -67,23 +74,23 @@ const EventSetup = () => {
             <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
-                <span className="text-sm truncate">{new Date(currentEvent.event_date).toLocaleDateString()}</span>
+                <span className="text-sm truncate">{new Date(activeEvent.event_date).toLocaleDateString()}</span>
               </div>
-              {currentEvent.location && (
+              {activeEvent.location && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
-                  <span className="text-sm truncate">{currentEvent.location}</span>
+                  <span className="text-sm truncate">{activeEvent.location}</span>
                 </div>
               )}
-              {currentEvent.start_time && (
+              {activeEvent.start_time && (
                 <div className="flex items-center gap-2">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
-                  <span className="text-sm truncate">{currentEvent.start_time} - {currentEvent.end_time || 'End TBD'}</span>
+                  <span className="text-sm truncate">{activeEvent.start_time} - {activeEvent.end_time || 'End TBD'}</span>
                 </div>
               )}
             </div>
-            {currentEvent.description && (
-              <p className="mt-3 text-sm md:text-base text-continental-white/90 line-clamp-2">{currentEvent.description}</p>
+            {activeEvent.description && (
+              <p className="mt-3 text-sm md:text-base text-continental-white/90 line-clamp-2">{activeEvent.description}</p>
             )}
           </CardContent>
         </Card>
@@ -99,7 +106,7 @@ const EventSetup = () => {
           <Plus className="h-4 w-4 mr-2" />
           Create New Event
         </Button>
-        {currentEvent && (
+        {activeEvent && (
           <Button 
             onClick={() => setShowFieldMapping(true)}
             variant="outline"
@@ -185,13 +192,13 @@ const EventSetup = () => {
 
       {/* Event Form Modal/Component */}
       {showEventForm && (
-        <EventForm onClose={() => setShowEventForm(false)} />
+        <EventForm onClose={() => setShowEventForm(false)} onEventCreated={handleEventUpdated} />
       )}
 
       {/* Field Mapping Modal/Component */}
-      {showFieldMapping && currentEvent && (
+      {showFieldMapping && activeEvent && (
         <FieldMappingManager 
-          event={currentEvent}
+          event={activeEvent}
           fieldMappings={fieldMappings}
           onClose={() => setShowFieldMapping(false)} 
         />
@@ -203,6 +210,7 @@ const EventSetup = () => {
           event={editingEvent}
           open={!!editingEvent}
           onClose={() => setEditingEvent(null)}
+          onEventUpdated={handleEventUpdated}
         />
       )}
 
@@ -212,6 +220,7 @@ const EventSetup = () => {
           event={deletingEvent}
           open={!!deletingEvent}
           onClose={() => setDeletingEvent(null)}
+          onEventDeleted={handleEventUpdated}
         />
       )}
     </div>

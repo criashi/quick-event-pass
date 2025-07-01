@@ -7,14 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { X } from "lucide-react";
-import { useEventManagement } from "@/hooks/useEventManagement";
+import { useEventCRUD } from "@/hooks/useEventCRUD";
 
 interface EventFormProps {
   onClose: () => void;
+  onEventCreated: () => void;
 }
 
-const EventForm = ({ onClose }: EventFormProps) => {
-  const { createEvent } = useEventManagement();
+const EventForm = ({ onClose, onEventCreated }: EventFormProps) => {
+  const { createEvent } = useEventCRUD();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -31,6 +32,7 @@ const EventForm = ({ onClose }: EventFormProps) => {
     
     const success = await createEvent(formData);
     if (success) {
+      onEventCreated();
       onClose();
     }
   };
