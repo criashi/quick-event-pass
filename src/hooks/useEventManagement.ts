@@ -25,8 +25,6 @@ export const useEventManagement = () => {
     const result = await updateEvent(eventId, eventData);
     if (result) {
       console.log('Event updated successfully, refreshing events...');
-      // Let refreshEvents handle setting the correct currentEvent
-      // Don't manually set it here as it causes race conditions
       await refreshEvents();
     }
     return result;

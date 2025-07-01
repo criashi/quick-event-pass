@@ -52,24 +52,7 @@ export const useEventOperations = () => {
     try {
       console.log('About to update event in database:', eventId, eventData);
       
-      // Use a transaction-like approach to ensure consistency
-      if (eventData.is_active) {
-        console.log('Setting event as active - deactivating others and activating target...');
-        
-        // First deactivate all events, then activate the target in a single operation
-        const { error: deactivateError } = await supabase
-          .from('events')
-          .update({ is_active: false })
-          .neq('id', eventId);
-          
-        if (deactivateError) {
-          console.error('Error deactivating other events:', deactivateError);
-          throw deactivateError;
-        }
-      }
-
-      // Update the target event
-      console.log('Updating target event...');
+      // Simple, direct update - let the database handle consistency
       const { error } = await supabase
         .from('events')
         .update({ ...eventData, updated_at: new Date().toISOString() })
@@ -83,6 +66,15 @@ export const useEventOperations = () => {
           variant: "destructive",
         });
         return false;
+      }
+
+      // If setting as active, deactivate others
+      if (eventData.is_active) {
+        console.log('Deactivating other events...');
+        await supabase
+          .from('events')
+          .update({ is_active: false })
+          .neq('id', eventId);
       }
 
       console.log('Event updated in database successfully');
