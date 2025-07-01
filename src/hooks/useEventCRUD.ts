@@ -8,30 +8,67 @@ export const useEventCRUD = () => {
 
   const createEvent = async (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      console.log('createEvent: Starting event creation with data:', eventData);
+      
+      // Check current user authentication status
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('createEvent: Current user:', user);
+      console.log('createEvent: User error:', userError);
+      
+      if (!user) {
+        console.error('createEvent: No authenticated user found');
+        toast({
+          title: "Authentication Required",
+          description: "You must be logged in to create events",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       // If this event should be active, deactivate others first
       if (eventData.is_active) {
-        await supabase
+        console.log('createEvent: Deactivating other events first...');
+        const { error: deactivateError } = await supabase
           .from('events')
           .update({ is_active: false })
           .neq('id', '00000000-0000-0000-0000-000000000000');
+
+        if (deactivateError) {
+          console.error('createEvent: Error deactivating other events:', deactivateError);
+        } else {
+          console.log('createEvent: Successfully deactivated other events');
+        }
       }
 
+      console.log('createEvent: Attempting to insert event...');
       const { data, error } = await supabase
         .from('events')
         .insert([eventData])
         .select()
         .single();
 
+      console.log('createEvent: Insert response - data:', data, 'error:', error);
+
       if (error) {
-        console.error('Error creating event:', error);
+        console.error('createEvent: Database error:', error);
+        
+        // Provide more specific error messages
+        let errorMessage = "Failed to create event";
+        if (error.code === '42501') {
+          errorMessage = "You don't have permission to create events. Please check your user role.";
+        } else if (error.code === '22007') {
+          errorMessage = "Invalid time format provided";
+        }
+        
         toast({
           title: "Error",
-          description: "Failed to create event",
+          description: errorMessage,
           variant: "destructive",
         });
         return null;
       }
 
+      console.log('createEvent: Event created successfully:', data);
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -39,7 +76,7 @@ export const useEventCRUD = () => {
 
       return data;
     } catch (error) {
-      console.error('Error:', error);
+      console.error('createEvent: Unexpected error:', error);
       toast({
         title: "Error",
         description: "Failed to create event",

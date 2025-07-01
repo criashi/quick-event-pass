@@ -30,7 +30,20 @@ const EventForm = ({ onClose, onEventCreated }: EventFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const success = await createEvent(formData);
+    console.log('EventForm: Raw form data:', formData);
+    
+    // Prepare the data for submission, converting empty strings to null for time fields
+    const eventData = {
+      ...formData,
+      start_time: formData.start_time.trim() === '' ? null : formData.start_time,
+      end_time: formData.end_time.trim() === '' ? null : formData.end_time,
+      description: formData.description.trim() === '' ? null : formData.description,
+      location: formData.location.trim() === '' ? null : formData.location,
+    };
+    
+    console.log('EventForm: Processed event data being sent:', eventData);
+    
+    const success = await createEvent(eventData);
     if (success) {
       onEventCreated();
       onClose();
