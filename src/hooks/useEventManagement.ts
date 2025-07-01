@@ -14,15 +14,27 @@ export const useEventManagement = () => {
   const handleCreateEvent = async (eventData: any) => {
     const result = await createEvent(eventData);
     if (result) {
+      console.log('Event created, refreshing events...');
       await refreshEvents();
     }
     return result;
   };
 
   const handleUpdateEvent = async (eventId: string, eventData: any) => {
+    console.log('Updating event:', eventId, eventData);
     const result = await updateEvent(eventId, eventData);
     if (result) {
+      console.log('Event updated successfully, refreshing events...');
       await refreshEvents();
+      
+      // If we're updating the active status, ensure the current event is updated
+      if (eventData.is_active) {
+        const updatedEvent = events.find(event => event.id === eventId);
+        if (updatedEvent) {
+          console.log('Setting current event after update:', updatedEvent.name);
+          setCurrentEvent({ ...updatedEvent, ...eventData });
+        }
+      }
     }
     return result;
   };

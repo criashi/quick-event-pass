@@ -36,11 +36,11 @@ export const useEvents = () => {
       console.log('Found active event:', activeEvent);
       
       if (activeEvent) {
+        console.log('Setting current event to:', activeEvent.name);
         setCurrentEvent(activeEvent);
-        console.log('Set current event to:', activeEvent.name);
       } else {
+        console.log('No active event found, clearing current event');
         setCurrentEvent(null);
-        console.log('No active event found');
       }
     } catch (error) {
       console.error('Error:', error);
