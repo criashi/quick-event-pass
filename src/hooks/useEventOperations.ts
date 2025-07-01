@@ -63,7 +63,11 @@ export const useEventOperations = () => {
           
         if (deactivateError) {
           console.error('Error deactivating other events:', deactivateError);
+          throw deactivateError;
         }
+
+        // Wait a bit to ensure the deactivation is committed
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
 
       console.log('Updating target event...');
@@ -83,13 +87,14 @@ export const useEventOperations = () => {
       }
 
       console.log('Event updated in database successfully');
+      
+      // Wait longer to ensure database consistency before returning
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       toast({
         title: "Success",
         description: "Event updated successfully",
       });
-
-      // Add a small delay to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 100));
 
       return true;
     } catch (error) {
