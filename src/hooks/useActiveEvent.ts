@@ -12,7 +12,7 @@ export const useActiveEvent = () => {
   const fetchActiveEvent = async () => {
     try {
       setLoading(true);
-      console.log('fetchActiveEvent: Fetching active event...');
+      console.log('fetchActiveEvent: Starting fetch...');
       
       const { data, error } = await supabase
         .from('events')
@@ -20,17 +20,26 @@ export const useActiveEvent = () => {
         .eq('is_active', true)
         .maybeSingle();
 
+      console.log('fetchActiveEvent: Raw database response:', { data, error });
+
       if (error) {
-        console.error('fetchActiveEvent: Error fetching active event:', error);
+        console.error('fetchActiveEvent: Database error:', error);
         return;
       }
 
-      console.log('fetchActiveEvent: Found active event:', data);
+      console.log('fetchActiveEvent: Setting active event to:', data);
       setActiveEvent(data);
+      
+      // Force a re-render by logging the state after setting
+      setTimeout(() => {
+        console.log('fetchActiveEvent: Active event state after update:', data);
+      }, 100);
+      
     } catch (error) {
       console.error('fetchActiveEvent: Unexpected error:', error);
     } finally {
       setLoading(false);
+      console.log('fetchActiveEvent: Finished, loading set to false');
     }
   };
 
@@ -95,8 +104,16 @@ export const useActiveEvent = () => {
   };
 
   useEffect(() => {
+    console.log('useActiveEvent: useEffect triggered, calling fetchActiveEvent');
     fetchActiveEvent();
   }, []);
+
+  // Log whenever activeEvent changes
+  useEffect(() => {
+    console.log('useActiveEvent: activeEvent state changed to:', activeEvent);
+  }, [activeEvent]);
+
+  console.log('useActiveEvent: Rendering hook, current activeEvent:', activeEvent, 'loading:', loading);
 
   return {
     activeEvent,

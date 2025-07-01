@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,13 @@ const EventSetup = () => {
   const [showFieldMapping, setShowFieldMapping] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+
+  // Add comprehensive logging
+  console.log('EventSetup: Rendering component');
+  console.log('EventSetup: activeEvent:', activeEvent);
+  console.log('EventSetup: activeLoading:', activeLoading);
+  console.log('EventSetup: events:', events);
+  console.log('EventSetup: eventsLoading:', eventsLoading);
 
   const handleSetActiveEvent = async (eventId: string) => {
     console.log('handleSetActiveEvent: Starting to set active event:', eventId);
@@ -48,6 +54,7 @@ const EventSetup = () => {
   };
 
   if (eventsLoading || activeLoading) {
+    console.log('EventSetup: Still loading...');
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
@@ -58,10 +65,12 @@ const EventSetup = () => {
     );
   }
 
+  console.log('EventSetup: About to render, activeEvent is:', activeEvent);
+
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Current Active Event */}
-      {activeEvent && (
+      {/* Current Active Event - FORCE DISPLAY WITH DETAILED LOGGING */}
+      {activeEvent ? (
         <Card className="bg-gradient-to-r from-continental-light-green to-continental-dark-green text-white">
           <CardHeader className="pb-3 md:pb-6">
             <div className="flex items-start justify-between gap-3">
@@ -96,6 +105,14 @@ const EventSetup = () => {
             {activeEvent.description && (
               <p className="mt-3 text-sm md:text-base text-continental-white/90 line-clamp-2">{activeEvent.description}</p>
             )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-2 border-dashed border-gray-300">
+          <CardContent className="p-6 text-center">
+            <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Active Event</h3>
+            <p className="text-gray-500">No event is currently set as active. Set an event as active to manage it.</p>
           </CardContent>
         </Card>
       )}
