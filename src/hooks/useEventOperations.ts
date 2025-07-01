@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Event } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
@@ -50,16 +51,32 @@ export const useEventOperations = () => {
 
   const updateEvent = async (eventId: string, eventData: Partial<Event>) => {
     try {
-      console.log('About to update event in database:', eventId, eventData);
+      console.log('updateEvent: Starting update for', eventId, 'with data:', eventData);
       
-      // Simple, direct update - let the database handle consistency
-      const { error } = await supabase
+      // If setting as active, first deactivate all other events
+      if (eventData.is_active) {
+        console.log('updateEvent: Deactivating other events first...');
+        const { error: deactivateError } = await supabase
+          .from('events')
+          .update({ is_active: false })
+          .neq('id', eventId);
+          
+        if (deactivateError) {
+          console.error('updateEvent: Error deactivating other events:', deactivateError);
+          throw deactivateError;
+        }
+        console.log('updateEvent: Other events deactivated');
+      }
+
+      // Now update the target event
+      console.log('updateEvent: Updating target event...');
+      const { error: updateError } = await supabase
         .from('events')
         .update({ ...eventData, updated_at: new Date().toISOString() })
         .eq('id', eventId);
 
-      if (error) {
-        console.error('Error updating event:', error);
+      if (updateError) {
+        console.error('updateEvent: Error updating target event:', updateError);
         toast({
           title: "Error",
           description: "Failed to update event",
@@ -68,16 +85,7 @@ export const useEventOperations = () => {
         return false;
       }
 
-      // If setting as active, deactivate others
-      if (eventData.is_active) {
-        console.log('Deactivating other events...');
-        await supabase
-          .from('events')
-          .update({ is_active: false })
-          .neq('id', eventId);
-      }
-
-      console.log('Event updated in database successfully');
+      console.log('updateEvent: Target event updated successfully');
 
       toast({
         title: "Success",
@@ -86,7 +94,7 @@ export const useEventOperations = () => {
 
       return true;
     } catch (error) {
-      console.error('Error:', error);
+      console.error('updateEvent: Unexpected error:', error);
       toast({
         title: "Error",
         description: "Failed to update event",
