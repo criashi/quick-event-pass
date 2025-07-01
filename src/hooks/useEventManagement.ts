@@ -8,6 +8,9 @@ export const useEventManagement = () => {
   const { createEvent, updateEvent, deleteEvent } = useEventOperations();
   const { fieldMappings, fetchFieldMappings, createFieldMapping } = useFieldMappings(currentEvent?.id);
 
+  console.log('useEventManagement - currentEvent:', currentEvent);
+  console.log('useEventManagement - events count:', events.length);
+
   const handleCreateEvent = async (eventData: any) => {
     const result = await createEvent(eventData);
     if (result) {

@@ -12,6 +12,7 @@ export const useEvents = () => {
 
   const fetchEvents = async () => {
     try {
+      console.log('Fetching events...');
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -27,12 +28,19 @@ export const useEvents = () => {
         return;
       }
 
+      console.log('Fetched events:', data);
       setEvents(data || []);
       
       // Set the active event as current
       const activeEvent = data?.find(event => event.is_active);
+      console.log('Found active event:', activeEvent);
+      
       if (activeEvent) {
         setCurrentEvent(activeEvent);
+        console.log('Set current event to:', activeEvent.name);
+      } else {
+        setCurrentEvent(null);
+        console.log('No active event found');
       }
     } catch (error) {
       console.error('Error:', error);
