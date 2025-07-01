@@ -25,17 +25,9 @@ export const useEventManagement = () => {
     const result = await updateEvent(eventId, eventData);
     if (result) {
       console.log('Event updated successfully, refreshing events...');
-      // Force an immediate refresh to get the latest data
+      // Let refreshEvents handle setting the correct currentEvent
+      // Don't manually set it here as it causes race conditions
       await refreshEvents();
-      
-      // If we're setting this event as active, immediately update the current event
-      if (eventData.is_active) {
-        const updatedEvent = events.find(e => e.id === eventId);
-        if (updatedEvent) {
-          console.log('Manually setting current event to updated event');
-          setCurrentEvent({ ...updatedEvent, ...eventData });
-        }
-      }
     }
     return result;
   };
