@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from "npm:resend@2.0.0";
@@ -81,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
       for (const batch of batches) {
         const { data: batchAttendees, error: fetchError } = await supabaseClient
           .from('attendees')
-          .select('id, full_name, continental_email, qr_code_data')
+          .select('id, full_name, continental_email, qr_code_data, email_sent')
           .in('id', batch);
 
         if (fetchError) {
@@ -136,188 +135,199 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send emails with QR codes using Resend with rate limiting
-    const emailResults = [];
-    // Remove rate limiting since user upgraded Resend subscription
-    
-    console.log(`Starting to send ${attendees.length} emails...`);
-    
-    for (let i = 0; i < attendees.length; i++) {
-      const attendee = attendees[i];
-      const qrCodeData = attendee.qr_code_data || `CONTINENTAL_EVENT_${attendee.id}`;
+    // Define background email sending task with proper rate limiting
+    async function sendEmailsInBackground() {
+      const emailResults = [];
+      console.log(`Starting background email sending for ${attendees.length} emails with 2 per second rate limit...`);
       
-      try {
-        // Generate QR code URL using a QR code service
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeData)}`;
+      for (let i = 0; i < attendees.length; i++) {
+        const attendee = attendees[i];
+        const qrCodeData = attendee.qr_code_data || `CONTINENTAL_EVENT_${attendee.id}`;
         
-        // Format event date and time
-        const eventDate = new Date(events.event_date);
-        const formattedDate = eventDate.toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-        
-        const startTime = events.start_time ? 
-          new Date(`2000-01-01T${events.start_time}`).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          }) : 'TBD';
+        try {
+          // Generate QR code URL using a QR code service
+          const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeData)}`;
           
-        const endTime = events.end_time ? 
-          new Date(`2000-01-01T${events.end_time}`).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          }) : '';
-        
-        const timeRange = endTime ? `${startTime} - ${endTime}` : startTime;
-        const timezone = events.timezone || 'EST';
-        
-        // Create email HTML with Continental branding and actual event details
-        const emailHtml = `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>Your Continental Event QR Code</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-                .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                .header { text-align: center; margin-bottom: 30px; }
-                .logo { background: linear-gradient(135deg, #FFD700, #FFA500); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-                .qr-section { text-align: center; margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 10px; }
-                .qr-code { border: 3px solid #333; border-radius: 10px; max-width: 100%; height: auto; }
-                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
-                .instructions { background-color: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; }
-                .event-details { background-color: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <div class="logo">
-                    <h1 style="margin: 0; color: #333;">${events.name}</h1>
+          // Format event date and time
+          const eventDate = new Date(events.event_date);
+          const formattedDate = eventDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          const startTime = events.start_time ? 
+            new Date(`2000-01-01T${events.start_time}`).toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            }) : 'TBD';
+            
+          const endTime = events.end_time ? 
+            new Date(`2000-01-01T${events.end_time}`).toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            }) : '';
+          
+          const timeRange = endTime ? `${startTime} - ${endTime}` : startTime;
+          const timezone = events.timezone || 'EST';
+          
+          // Create email HTML with Continental branding and actual event details
+          const emailHtml = `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Your Continental Event QR Code</title>
+                <style>
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+                  .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                  .header { text-align: center; margin-bottom: 30px; }
+                  .logo { background: linear-gradient(135deg, #FFD700, #FFA500); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+                  .qr-section { text-align: center; margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 10px; }
+                  .qr-code { border: 3px solid #333; border-radius: 10px; max-width: 100%; height: auto; }
+                  .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+                  .instructions { background-color: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; }
+                  .event-details { background-color: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <div class="logo">
+                      <h1 style="margin: 0; color: #333;">${events.name}</h1>
+                    </div>
+                    <h2>Your Event QR Code</h2>
                   </div>
-                  <h2>Your Event QR Code</h2>
+                  
+                  <p>Dear <strong>${attendee.full_name}</strong>,</p>
+                  
+                  <p>Thank you for registering for <strong>${events.name}</strong>! Please find your personal QR code below.</p>
+                  
+                  <div class="event-details">
+                    <h3 style="margin-top: 0; color: #333;">📅 Event Information</h3>
+                    <p><strong>Event:</strong> ${events.name}</p>
+                    <p><strong>Date:</strong> ${formattedDate}</p>
+                    <p><strong>Time:</strong> ${timeRange} ${timezone}</p>
+                    <p><strong>Location:</strong> ${events.location || 'Location details will be provided'}</p>
+                    ${events.description ? `<p><strong>Description:</strong> ${events.description.replace(/\n/g, '<br>')}</p>` : ''}
+                  </div>
+                  
+                  <div class="qr-section">
+                    <h3>Your Check-in QR Code</h3>
+                    <img src="${qrCodeUrl}" alt="QR Code for ${attendee.full_name}" class="qr-code" />
+                    <p><strong>QR Code ID:</strong> ${qrCodeData}</p>
+                    <p style="font-size: 14px; color: #666;">Present this QR code at the event for quick check-in</p>
+                  </div>
+                  
+                  <div class="instructions">
+                    <h4 style="margin-top: 0; color: #0066cc;">Check-in Instructions:</h4>
+                    <p>✅ <strong>Arrival:</strong> Please arrive 15 minutes before the event start time</p>
+                    <p>📱 <strong>QR Code:</strong> Have this QR code ready on your phone or printed</p>
+                    <p>🎫 <strong>Entry:</strong> Show your QR code to event staff at the entrance</p>
+                    <p>❓ <strong>Support:</strong> Contact event organizers if you need assistance</p>
+                  </div>
+                  
+                  <p><strong>Important Notes:</strong></p>
+                  <ul>
+                    <li>Save this email or take a screenshot of the QR code for easy access</li>
+                    <li>This QR code is unique to you - please do not share it</li>
+                    <li>Keep your QR code secure until the event</li>
+                    <li>Arrive early for a smooth check-in experience</li>
+                  </ul>
+                  
+                  <div class="footer">
+                    <p>This is an automated email from Continental Events Management System.</p>
+                    <p>If you did not register for this event, please contact us immediately.</p>
+                    <p>Questions? Contact the event organizers for assistance.</p>
+                  </div>
                 </div>
-                
-                <p>Dear <strong>${attendee.full_name}</strong>,</p>
-                
-                <p>Thank you for registering for <strong>${events.name}</strong>! Please find your personal QR code below.</p>
-                
-                <div class="event-details">
-                  <h3 style="margin-top: 0; color: #333;">📅 Event Information</h3>
-                  <p><strong>Event:</strong> ${events.name}</p>
-                  <p><strong>Date:</strong> ${formattedDate}</p>
-                  <p><strong>Time:</strong> ${timeRange} ${timezone}</p>
-                  <p><strong>Location:</strong> ${events.location || 'Location details will be provided'}</p>
-                  ${events.description ? `<p><strong>Description:</strong> ${events.description.replace(/\n/g, '<br>')}</p>` : ''}
-                </div>
-                
-                <div class="qr-section">
-                  <h3>Your Check-in QR Code</h3>
-                  <img src="${qrCodeUrl}" alt="QR Code for ${attendee.full_name}" class="qr-code" />
-                  <p><strong>QR Code ID:</strong> ${qrCodeData}</p>
-                  <p style="font-size: 14px; color: #666;">Present this QR code at the event for quick check-in</p>
-                </div>
-                
-                <div class="instructions">
-                  <h4 style="margin-top: 0; color: #0066cc;">Check-in Instructions:</h4>
-                  <p>✅ <strong>Arrival:</strong> Please arrive 15 minutes before the event start time</p>
-                  <p>📱 <strong>QR Code:</strong> Have this QR code ready on your phone or printed</p>
-                  <p>🎫 <strong>Entry:</strong> Show your QR code to event staff at the entrance</p>
-                  <p>❓ <strong>Support:</strong> Contact event organizers if you need assistance</p>
-                </div>
-                
-                <p><strong>Important Notes:</strong></p>
-                <ul>
-                  <li>Save this email or take a screenshot of the QR code for easy access</li>
-                  <li>This QR code is unique to you - please do not share it</li>
-                  <li>Keep your QR code secure until the event</li>
-                  <li>Arrive early for a smooth check-in experience</li>
-                </ul>
-                
-                <div class="footer">
-                  <p>This is an automated email from Continental Events Management System.</p>
-                  <p>If you did not register for this event, please contact us immediately.</p>
-                  <p>Questions? Contact the event organizers for assistance.</p>
-                </div>
-              </div>
-            </body>
-          </html>
-        `;
+              </body>
+            </html>
+          `;
 
-        // Send email using Resend - use the user's verified domain
-        const emailResponse = await resend.emails.send({
-          from: 'Continental Events <noreply@conti-event.net>',
-          to: [attendee.continental_email],
-          subject: `Your QR Code for ${events.name} - ${formattedDate}`,
-          html: emailHtml,
-        });
+          // Send email using Resend
+          const emailResponse = await resend.emails.send({
+            from: 'Continental Events <noreply@conti-event.net>',
+            to: [attendee.continental_email],
+            subject: `Your QR Code for ${events.name} - ${formattedDate}`,
+            html: emailHtml,
+          });
 
-        if (emailResponse.error) {
-          console.error(`Email error for ${attendee.continental_email}:`, emailResponse.error);
+          if (emailResponse.error) {
+            console.error(`Email error for ${attendee.continental_email}:`, emailResponse.error);
+            emailResults.push({
+              attendee_id: attendee.id,
+              email: attendee.continental_email,
+              success: false,
+              error: emailResponse.error.message
+            });
+          } else {
+            console.log(`QR code email sent successfully to ${attendee.continental_email} (${i + 1}/${attendees.length})`);
+            
+            // Mark email as sent in database
+            const { error: updateError } = await supabaseClient
+              .from('attendees')
+              .update({ 
+                email_sent: true, 
+                email_sent_at: new Date().toISOString() 
+              })
+              .eq('id', attendee.id);
+
+            if (updateError) {
+              console.error(`Error updating email status for ${attendee.id}:`, updateError);
+            }
+            
+            emailResults.push({
+              attendee_id: attendee.id,
+              email: attendee.continental_email,
+              success: true
+            });
+          }
+          
+        } catch (emailError: any) {
+          console.error(`Failed to send email to ${attendee.continental_email}:`, emailError);
           emailResults.push({
             attendee_id: attendee.id,
             email: attendee.continental_email,
             success: false,
-            error: emailResponse.error.message
-          });
-        } else {
-          console.log(`QR code email sent successfully to ${attendee.continental_email}`);
-          
-          // Mark email as sent in database
-          const { error: updateError } = await supabaseClient
-            .from('attendees')
-            .update({ 
-              email_sent: true, 
-              email_sent_at: new Date().toISOString() 
-            })
-            .eq('id', attendee.id);
-
-          if (updateError) {
-            console.error(`Error updating email status for ${attendee.id}:`, updateError);
-          }
-          
-          emailResults.push({
-            attendee_id: attendee.id,
-            email: attendee.continental_email,
-            success: true
+            error: emailError.message
           });
         }
         
-      } catch (emailError: any) {
-        console.error(`Failed to send email to ${attendee.continental_email}:`, emailError);
-        emailResults.push({
-          attendee_id: attendee.id,
-          email: attendee.continental_email,
-          success: false,
-          error: emailError.message
-        });
-        
-        // Small delay to prevent overwhelming the email service
+        // Rate limiting: Wait 600ms between emails to stay under 2 per second limit
+        // (600ms allows for ~1.67 emails per second, safely under the 2/second limit)
         if (i < attendees.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay
+          await new Promise(resolve => setTimeout(resolve, 600));
         }
       }
+
+      const successCount = emailResults.filter(r => r.success).length;
+      const failureCount = emailResults.filter(r => !r.success).length;
+      console.log(`Background email sending complete: ${successCount} successful, ${failureCount} failed`);
     }
 
-    const successCount = emailResults.filter(r => r.success).length;
-    const failureCount = emailResults.filter(r => !r.success).length;
+    // Start the background task but don't await it
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      EdgeRuntime.waitUntil(sendEmailsInBackground());
+    } else {
+      // Fallback for environments without EdgeRuntime.waitUntil
+      sendEmailsInBackground().catch(error => {
+        console.error('Background email sending failed:', error);
+      });
+    }
 
-    console.log(`Email sending complete: ${successCount} successful, ${failureCount} failed`);
+    const estimatedMinutes = Math.ceil(attendees.length / 2 / 60);
 
+    // Return immediate response while emails are being sent in background
     return new Response(
       JSON.stringify({
-        message: `QR codes processed for ${attendees.length} attendees`,
-        results: {
-          total_attendees: attendees.length,
-          emails_sent: successCount,
-          emails_failed: failureCount,
-          details: emailResults
-        }
+        message: `QR code email sending started for ${attendees.length} attendees`,
+        info: `Emails will be sent at 2 per second rate limit. This will take approximately ${estimatedMinutes} minutes to complete.`,
+        attendees_to_process: attendees.length,
+        estimated_completion_time: `${estimatedMinutes} minutes`,
+        rate_limit: "2 emails per second (600ms delay between emails)"
       }),
       {
         status: 200,
