@@ -55,10 +55,11 @@ const handler = async (req: Request): Promise<Response> => {
     let attendees = [];
 
     if (sendToAll) {
-      // Fetch all attendees
+      // Fetch all attendees who haven't received emails yet
       const { data: allAttendees, error: fetchError } = await supabaseClient
         .from('attendees')
-        .select('id, full_name, continental_email, qr_code_data');
+        .select('id, full_name, continental_email, qr_code_data, email_sent')
+        .or('email_sent.is.null,email_sent.eq.false');
 
       if (fetchError) {
         console.error('Error fetching all attendees:', fetchError);
@@ -248,9 +249,9 @@ const handler = async (req: Request): Promise<Response> => {
           </html>
         `;
 
-        // Send email using Resend - use the user's verified domain
+        // Send email using Resend - use the default verified domain
         const emailResponse = await resend.emails.send({
-          from: 'Continental Events <noreply@conti-event.net>', // You need to replace this with your verified domain
+          from: 'Continental Events <onboarding@resend.dev>', // Using default verified domain
           to: [attendee.continental_email],
           subject: `Your QR Code for ${events.name} - ${formattedDate}`,
           html: emailHtml,
