@@ -110,12 +110,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send emails with QR codes using Resend with rate limiting
     const emailResults = [];
-    const RATE_LIMIT_DELAY = 600; // 600ms delay between emails (under 2 per second limit)
+    // Remove rate limiting since user upgraded Resend subscription
     
-    // Helper function to delay execution
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    
-    console.log(`Starting to send ${attendees.length} emails with rate limiting...`);
+    console.log(`Starting to send ${attendees.length} emails...`);
     
     for (let i = 0; i < attendees.length; i++) {
       const attendee = attendees[i];
@@ -263,11 +260,6 @@ const handler = async (req: Request): Promise<Response> => {
           });
         }
         
-        // Rate limiting: wait before sending the next email (except for the last one)
-        if (i < attendees.length - 1) {
-          await delay(RATE_LIMIT_DELAY);
-        }
-        
       } catch (emailError: any) {
         console.error(`Failed to send email to ${attendee.continental_email}:`, emailError);
         emailResults.push({
@@ -277,10 +269,6 @@ const handler = async (req: Request): Promise<Response> => {
           error: emailError.message
         });
         
-        // Still wait even on error to maintain rate limit
-        if (i < attendees.length - 1) {
-          await delay(RATE_LIMIT_DELAY);
-        }
       }
     }
 
