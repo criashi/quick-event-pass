@@ -18,10 +18,17 @@ interface EditEventDialogProps {
 
 const EditEventDialog = ({ event, open, onClose, onEventUpdated }: EditEventDialogProps) => {
   const { updateEvent } = useEventCRUD();
+  
+  // Helper function to format date for input field (prevents timezone shift)
+  const formatDateForInput = (dateString: string) => {
+    const date = new Date(dateString + 'T00:00:00'); // Force local timezone
+    return date.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
     name: event.name,
     description: event.description || '',
-    event_date: event.event_date,
+    event_date: formatDateForInput(event.event_date),
     start_time: event.start_time || '',
     end_time: event.end_time || '',
     location: event.location || '',
