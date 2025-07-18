@@ -87,7 +87,7 @@ const EventSetup = () => {
             <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
-                <span className="text-sm truncate">{new Date(activeEvent.event_date).toLocaleDateString()}</span>
+                <span className="text-sm truncate">{new Date(activeEvent.event_date + 'T00:00:00').toLocaleDateString()}</span>
               </div>
               {activeEvent.location && (
                 <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ const EventSetup = () => {
                     <div className="space-y-1 md:space-y-0 md:flex md:items-center md:gap-4 text-xs md:text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{new Date(event.event_date).toLocaleDateString()}</span>
+                        <span className="truncate">{new Date(event.event_date + 'T00:00:00').toLocaleDateString()}</span>
                       </span>
                       {event.location && (
                         <span className="flex items-center gap-1">
