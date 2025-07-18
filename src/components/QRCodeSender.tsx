@@ -99,8 +99,8 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
     }
   };
 
-  const unsentAttendees = attendees.filter(a => !a.qr_code_data);
-  const sentAttendees = attendees.filter(a => a.qr_code_data);
+  const unsentAttendees = attendees.filter(a => !a.email_sent);
+  const sentAttendees = attendees.filter(a => a.email_sent);
   
   // Get failed email recipients from the last results
   const failedEmails = emailResults.filter(r => !r.success);
@@ -332,7 +332,7 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
                     </div>
                   </div>
                   <div className="flex-shrink-0 ml-2">
-                    {attendee.qr_code_data ? (
+                    {attendee.email_sent ? (
                       <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Sent

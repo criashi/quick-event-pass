@@ -14,6 +14,8 @@ export interface Attendee {
   checked_in: boolean;
   check_in_time?: string;
   qr_code_data?: string;
+  email_sent?: boolean;
+  email_sent_at?: string;
   created_at?: string;
   updated_at?: string;
 }

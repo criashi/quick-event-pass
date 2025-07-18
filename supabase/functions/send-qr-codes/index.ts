@@ -242,6 +242,20 @@ const handler = async (req: Request): Promise<Response> => {
           });
         } else {
           console.log(`QR code email sent successfully to ${attendee.continental_email}`);
+          
+          // Mark email as sent in database
+          const { error: updateError } = await supabaseClient
+            .from('attendees')
+            .update({ 
+              email_sent: true, 
+              email_sent_at: new Date().toISOString() 
+            })
+            .eq('id', attendee.id);
+
+          if (updateError) {
+            console.error(`Error updating email status for ${attendee.id}:`, updateError);
+          }
+          
           emailResults.push({
             attendee_id: attendee.id,
             email: attendee.continental_email,
