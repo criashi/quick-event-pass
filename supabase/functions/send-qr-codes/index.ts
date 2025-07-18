@@ -249,9 +249,9 @@ const handler = async (req: Request): Promise<Response> => {
           </html>
         `;
 
-        // Send email using Resend - use the default verified domain
+        // Send email using Resend - use the user's verified domain
         const emailResponse = await resend.emails.send({
-          from: 'Continental Events <onboarding@resend.dev>', // Using default verified domain
+          from: 'Continental Events <noreply@conti-event.net>',
           to: [attendee.continental_email],
           subject: `Your QR Code for ${events.name} - ${formattedDate}`,
           html: emailHtml,
@@ -297,6 +297,10 @@ const handler = async (req: Request): Promise<Response> => {
           error: emailError.message
         });
         
+        // Small delay to prevent overwhelming the email service
+        if (i < attendees.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay
+        }
       }
     }
 
