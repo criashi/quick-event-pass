@@ -105,6 +105,53 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
   // Get failed email recipients from the last results
   const failedEmails = emailResults.filter(r => !r.success);
   
+  const sendToUnsentOnly = async () => {
+    if (unsentAttendees.length === 0) {
+      toast({
+        title: "No Unsent QR Codes",
+        description: "All attendees already have QR codes sent.",
+      });
+      return;
+    }
+    
+    const unsentIds = unsentAttendees.map(a => a.id);
+    
+    setSending(true);
+    setShowResults(false);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-qr-codes', {
+        body: { attendeeIds: unsentIds }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setEmailResults(data.results?.details || []);
+      setShowResults(true);
+      
+      toast({
+        title: "QR Codes Sent!",
+        description: `Sent to ${data.results?.emails_sent || 0} attendees who hadn't received QR codes yet.`,
+      });
+
+      if (onRefresh) {
+        onRefresh();
+      }
+
+    } catch (error: any) {
+      console.error('Failed to send to unsent attendees:', error);
+      toast({
+        title: "Error Sending QR Codes",
+        description: error.message || "Failed to send QR codes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+  
   const sendToFailedOnly = async () => {
     if (failedEmails.length === 0) {
       toast({
@@ -179,6 +226,18 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
               <Mail className="mr-2 h-4 w-4" />
               <span className="text-sm">Send to All ({attendees.length})</span>
             </Button>
+            
+            {unsentAttendees.length > 0 && (
+              <Button 
+                onClick={sendToUnsentOnly}
+                disabled={sending}
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 flex-1"
+              >
+                {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Mail className="mr-2 h-4 w-4" />
+                <span className="text-sm">Send to Unsent ({unsentAttendees.length})</span>
+              </Button>
+            )}
             
             <Button 
               onClick={() => sendQRCodes(false)}
