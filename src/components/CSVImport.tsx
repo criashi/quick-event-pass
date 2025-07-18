@@ -92,6 +92,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       // Microsoft Forms specific column names
       'Your Name (first and last)�': 'full_name',
       'Your Name (first and last)': 'full_name',
+      'Name (first and last)': 'full_name',
       'Please write your Continental email address:': 'continental_email',
       'Employee Number (e.g. 60001234)': 'employee_number',
       'Please Select Business Area': 'business_area',
@@ -266,7 +267,17 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
 
           // Check if validation failed
           if (!attendee) {
-            result.errors.push(`Invalid or missing required fields for: ${row.name || row['Full Name'] || 'Unknown'}`);
+            // Try to get the name from various possible columns for better error reporting
+            const name = row['Name (first and last)'] || row['Name'] || row['Full Name'] || row['name'] || row['full_name'] || 'Unknown';
+            const email = row['Email'] || row['Continental Email'] || row['Please write your Continental email address:'] || row['email'] || 'Unknown email';
+            
+            // Determine specific validation failure reason
+            let reason = 'Missing required fields';
+            if (!name || name === 'Unknown') reason = 'Missing name';
+            else if (!email || email === 'Unknown email') reason = 'Missing email';
+            else if (email !== 'Unknown email' && !isValidEmail(email)) reason = `Invalid email format: ${email}`;
+            
+            result.errors.push(`❌ Failed to import "${name}" - ${reason}`);
             continue;
           }
 
