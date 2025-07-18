@@ -75,13 +75,25 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
 
       console.log('QR codes sent successfully:', data);
       
-      setEmailResults(data.results?.details || []);
-      setShowResults(true);
-      
-      toast({
-        title: "QR Codes Sent!",
-        description: `Sent to ${data.results?.emails_sent || 0} attendees. ${data.results?.emails_failed || 0} failed.`,
-      });
+      // Handle background task response (new format)
+      if (data.attendees_to_process) {
+        setEmailResults([]);
+        setShowResults(false);
+        
+        toast({
+          title: "QR Code Sending Started!",
+          description: `Processing ${data.attendees_to_process} attendees. ${data.info}`,
+        });
+      } else {
+        // Handle legacy response format
+        setEmailResults(data.results?.details || []);
+        setShowResults(true);
+        
+        toast({
+          title: "QR Codes Sent!",
+          description: `Sent to ${data.results?.emails_sent || 0} attendees. ${data.results?.emails_failed || 0} failed.`,
+        });
+      }
 
       if (onRefresh) {
         onRefresh();
@@ -128,13 +140,25 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
         throw error;
       }
 
-      setEmailResults(data.results?.details || []);
-      setShowResults(true);
-      
-      toast({
-        title: "QR Codes Sent!",
-        description: `Sent to ${data.results?.emails_sent || 0} attendees who hadn't received QR codes yet.`,
-      });
+      // Handle background task response (new format)
+      if (data.attendees_to_process) {
+        setEmailResults([]);
+        setShowResults(false);
+        
+        toast({
+          title: "QR Code Sending Started!",
+          description: `Processing ${data.attendees_to_process} attendees who hadn't received QR codes yet. ${data.info}`,
+        });
+      } else {
+        // Handle legacy response format
+        setEmailResults(data.results?.details || []);
+        setShowResults(true);
+        
+        toast({
+          title: "QR Codes Sent!",
+          description: `Sent to ${data.results?.emails_sent || 0} attendees who hadn't received QR codes yet.`,
+        });
+      }
 
       if (onRefresh) {
         onRefresh();
