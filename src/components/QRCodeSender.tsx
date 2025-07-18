@@ -101,6 +101,58 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
 
   const unsentAttendees = attendees.filter(a => !a.qr_code_data);
   const sentAttendees = attendees.filter(a => a.qr_code_data);
+  
+  // Get failed email recipients from the last results
+  const failedEmails = emailResults.filter(r => !r.success);
+  
+  const sendToFailedOnly = async () => {
+    if (failedEmails.length === 0) {
+      toast({
+        title: "No Failed Emails",
+        description: "There are no failed emails to retry.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Get attendee IDs for failed emails
+    const failedAttendeeIds = failedEmails.map(r => r.attendee_id);
+    
+    setSending(true);
+    setShowResults(false);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-qr-codes', {
+        body: { attendeeIds: failedAttendeeIds }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setEmailResults(data.results?.details || []);
+      setShowResults(true);
+      
+      toast({
+        title: "Retry Complete!",
+        description: `Retried ${failedEmails.length} failed emails. ${data.results?.emails_sent || 0} successful.`,
+      });
+
+      if (onRefresh) {
+        onRefresh();
+      }
+
+    } catch (error: any) {
+      console.error('Failed to retry emails:', error);
+      toast({
+        title: "Retry Failed",
+        description: error.message || "Failed to retry emails. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="space-y-4 p-2 max-w-full">
@@ -138,6 +190,19 @@ const QRCodeSender = ({ attendees, onRefresh }: QRCodeSenderProps) => {
               <Send className="mr-2 h-4 w-4" />
               <span className="text-sm">Send Selected ({selectedAttendees.length})</span>
             </Button>
+            
+            {failedEmails.length > 0 && (
+              <Button 
+                onClick={sendToFailedOnly}
+                disabled={sending}
+                variant="destructive"
+                className="flex-1"
+              >
+                {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <XCircle className="mr-2 h-4 w-4" />
+                <span className="text-sm">Retry Failed ({failedEmails.length})</span>
+              </Button>
+            )}
           </div>
 
           {/* Status Summary */}
