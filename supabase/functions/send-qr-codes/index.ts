@@ -52,19 +52,46 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Found active event:', events);
 
     // Get attendees to send QR codes to
-    let attendeesQuery = supabaseClient
-      .from('attendees')
-      .select('id, full_name, continental_email, qr_code_data');
+    let attendees = [];
 
-    if (!sendToAll && attendeeIds && attendeeIds.length > 0) {
-      attendeesQuery = attendeesQuery.in('id', attendeeIds);
-    }
+    if (sendToAll) {
+      // Fetch all attendees
+      const { data: allAttendees, error: fetchError } = await supabaseClient
+        .from('attendees')
+        .select('id, full_name, continental_email, qr_code_data');
 
-    const { data: attendees, error: fetchError } = await attendeesQuery;
+      if (fetchError) {
+        console.error('Error fetching all attendees:', fetchError);
+        throw new Error(`Failed to fetch attendees: ${fetchError.message}`);
+      }
+      attendees = allAttendees || [];
+    } else if (attendeeIds && attendeeIds.length > 0) {
+      // Fetch attendees in batches to avoid URL length limits
+      const batchSize = 100; // Process 100 attendees at a time
+      const batches = [];
+      
+      for (let i = 0; i < attendeeIds.length; i += batchSize) {
+        const batch = attendeeIds.slice(i, i + batchSize);
+        batches.push(batch);
+      }
+      
+      console.log(`Processing ${attendeeIds.length} attendees in ${batches.length} batches`);
+      
+      for (const batch of batches) {
+        const { data: batchAttendees, error: fetchError } = await supabaseClient
+          .from('attendees')
+          .select('id, full_name, continental_email, qr_code_data')
+          .in('id', batch);
 
-    if (fetchError) {
-      console.error('Error fetching attendees:', fetchError);
-      throw new Error(`Failed to fetch attendees: ${fetchError.message}`);
+        if (fetchError) {
+          console.error('Error fetching batch attendees:', fetchError);
+          throw new Error(`Failed to fetch attendees: ${fetchError.message}`);
+        }
+        
+        if (batchAttendees) {
+          attendees.push(...batchAttendees);
+        }
+      }
     }
 
     if (!attendees || attendees.length === 0) {
