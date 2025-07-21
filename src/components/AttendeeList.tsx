@@ -24,7 +24,8 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
     const matchesSearch = 
       attendee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       attendee.continental_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (attendee.employee_number && attendee.employee_number.includes(searchTerm));
+      (attendee.employee_number && attendee.employee_number.includes(searchTerm)) ||
+      (attendee.business_area && attendee.business_area.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = 
       filterStatus === "all" ||
