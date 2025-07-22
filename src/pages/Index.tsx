@@ -62,7 +62,7 @@ const Index = () => {
       case "scanner":
         return <QRScanner onCheckIn={handleCheckIn} attendees={attendees} />;
       case "attendees":
-        return <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} />;
+        return <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} eventId={currentEvent?.id} onRefresh={refreshData} />;
       case "qr-sender":
         return <QRCodeSender attendees={attendees} onRefresh={refreshData} />;
       case "event-setup":

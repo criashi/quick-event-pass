@@ -7,13 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, CheckCircle, Clock, Mail, AlertTriangle, Building } from "lucide-react";
 import { Attendee } from "@/types/attendee";
+import AddAttendeeDialog from "@/components/AddAttendeeDialog";
 
 interface AttendeeListProps {
   attendees: Attendee[];
   onCheckIn: (attendeeId: string) => Promise<boolean>;
+  eventId?: string;
+  onRefresh: () => void;
 }
 
-const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
+const AttendeeList = ({ attendees, onCheckIn, eventId, onRefresh }: AttendeeListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterBusinessArea, setFilterBusinessArea] = useState("all");
@@ -43,10 +46,15 @@ const AttendeeList = ({ attendees, onCheckIn }: AttendeeListProps) => {
       {/* Filters */}
       <Card className="shadow-lg border-0">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg md:text-xl text-gray-800">Continental Employee Management</CardTitle>
-          <CardDescription className="text-sm">
-            Search and filter event attendees, view check-in status
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg md:text-xl text-gray-800">Continental Employee Management</CardTitle>
+              <CardDescription className="text-sm">
+                Search and filter event attendees, view check-in status
+              </CardDescription>
+            </div>
+            <AddAttendeeDialog eventId={eventId} onAttendeeAdded={onRefresh} />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="w-full">
