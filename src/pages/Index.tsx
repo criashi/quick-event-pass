@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X, Calendar, Upload } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Dashboard from "@/components/Dashboard";
 import QRScanner from "@/components/QRScanner";
 import AttendeeList from "@/components/AttendeeList";
@@ -23,6 +23,10 @@ const Index = () => {
   const stats = getStats();
   const [currentView, setCurrentView] = useState("dashboard");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = "Aumovio Events Management";
+  }, []);
 
   // Wrapper function to handle async check-in for QRScanner
   const handleCheckIn = async (attendeeId: string): Promise<boolean> => {
@@ -173,24 +177,19 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Second Row: Centered Logo and Title */}
+        {/* Centered Brand Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <img
-              src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png"
-              alt="Aumovio logo"
-              className={`${isMobile ? 'h-6' : 'h-8'} w-auto`}
-              loading="eager"
-              decoding="async"
-            />
-            <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-continental-black`}>
-              Aumovio Events
-            </h1>
-          </div>
-          <div className="w-16 h-1 bg-continental-yellow mx-auto mb-2"></div>
-          <p className={`${isMobile ? 'text-sm' : 'text-base'} text-continental-gray1 font-medium`}>
-            Employee event registration and check-in management system
-          </p>
+          <img
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png"
+            alt="Aumovio logo"
+            className={`${isMobile ? 'h-8' : 'h-12'} mx-auto w-auto`}
+            loading="eager"
+            decoding="async"
+          />
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-continental-black mt-3`}>
+            Events Management
+          </h1>
+          <div className="w-16 h-1 bg-aum-orange mx-auto mt-3"></div>
         </div>
 
         {/* Current View Title */}
