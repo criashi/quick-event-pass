@@ -50,10 +50,10 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver flex items-center justify-center font-continental">
+      <div className="min-h-screen bg-gradient-to-br from-aum-gray-100 via-background to-aum-gray-200 flex items-center justify-center font-continental">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-continental-yellow mx-auto mb-4" />
-          <p className="text-lg text-continental-gray1 font-medium">Loading event data...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-aum-orange mx-auto mb-4" />
+          <p className="text-lg text-muted-foreground font-medium">Loading event data...</p>
         </div>
       </div>
     );
@@ -73,24 +73,24 @@ const Index = () => {
         return <EventSetup />;
       case "settings":
         return (
-          <Card className="shadow-lg border-0 bg-continental-white">
+          <Card className="shadow-lg border-0 bg-card">
             <CardHeader>
-              <CardTitle className="text-2xl text-continental-black">Import Attendees</CardTitle>
-              <CardDescription className="text-continental-gray1">
+              <CardTitle className="text-2xl text-foreground">Import Attendees</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Import attendee data from CSV files for your events
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <CSVImport onImportComplete={refreshData} />
               
-              <div className="border-t border-continental-gray3 pt-6">
+              <div className="border-t border-border pt-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-continental-black">Database Status</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Database Status</h3>
                   <div className="space-y-2">
-                    <p className="text-sm text-continental-gray1">Status: <Badge variant="secondary" className="bg-continental-light-green text-continental-white">Connected</Badge></p>
-                    <p className="text-sm text-continental-gray1">Provider: Supabase</p>
-                    <p className="text-sm text-continental-gray1">Total Records: {stats.total}</p>
-                    <p className="text-sm text-continental-gray1">Active Event: {currentEvent?.name || 'None'}</p>
+                    <p className="text-sm text-muted-foreground">Status: <Badge variant="secondary" className="bg-aum-purple text-primary-foreground">Connected</Badge></p>
+                    <p className="text-sm text-muted-foreground">Provider: Supabase</p>
+                    <p className="text-sm text-muted-foreground">Total Records: {stats.total}</p>
+                    <p className="text-sm text-muted-foreground">Active Event: {currentEvent?.name || 'None'}</p>
                   </div>
                 </div>
               </div>
@@ -114,21 +114,21 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver font-continental">
+    <div className="min-h-screen bg-gradient-to-br from-aum-gray-100 via-background to-aum-gray-200 font-continental">
       <div className="container mx-auto px-4 py-8">
         {/* Top Row: Hamburger Menu (left) and User Menu (right) */}
         <div className="flex items-center justify-between mb-4">
           {/* Left: Hamburger Menu */}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black">
+              <Button variant="outline" size="icon" className="border-aum-gray-300 text-muted-foreground hover:bg-aum-orange hover:text-primary-foreground">
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] bg-continental-white">
+            <SheetContent side="left" className="w-[280px] bg-card">
               <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b border-continental-gray3">
-                  <h2 className="text-lg font-semibold text-continental-black">Navigation</h2>
+                <div className="flex items-center justify-between p-4 border-b border-border">
+                  <h2 className="text-lg font-semibold text-foreground">Navigation</h2>
                 </div>
                 <nav className="flex-1 py-4">
                   <div className="space-y-2">
@@ -140,8 +140,8 @@ const Index = () => {
                           onClick={() => handleMenuItemClick(item.id)}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
                             currentView === item.id
-                              ? 'bg-continental-yellow text-continental-black font-medium'
-                              : 'text-continental-gray1 hover:bg-continental-gray4 hover:text-continental-black'
+                              ? 'bg-aum-orange text-primary-foreground font-medium'
+                              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                           }`}
                         >
                           <Icon className="h-5 w-5" />
@@ -158,10 +158,10 @@ const Index = () => {
           {/* Right: User Menu */}
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-continental-gray1 truncate max-w-[120px]`}>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground truncate max-w-[120px]`}>
                 {profile?.full_name || user?.email}
               </p>
-              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs bg-continental-yellow text-continental-black">
+              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs bg-aum-orange text-primary-foreground">
                 {profile?.role}
               </Badge>
             </div>
@@ -169,7 +169,7 @@ const Index = () => {
               variant="outline"
               size="icon"
               onClick={signOut}
-              className="border-continental-gray2 text-continental-gray1 hover:bg-continental-yellow hover:text-continental-black"
+              className="border-aum-gray-300 text-muted-foreground hover:bg-aum-orange hover:text-primary-foreground"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
@@ -182,67 +182,67 @@ const Index = () => {
           <img
             src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png"
             alt="Aumovio logo"
-            className={`${isMobile ? 'h-8' : 'h-12'} mx-auto w-auto`}
+            className={`${isMobile ? 'h-16' : 'h-20'} mx-auto w-auto`}
             loading="eager"
             decoding="async"
           />
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-continental-black mt-3`}>
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-foreground mt-4`}>
             Events Management
           </h1>
-          <div className="w-16 h-1 bg-aum-orange mx-auto mt-3"></div>
+          <div className="w-20 h-1 bg-aum-orange mx-auto mt-4"></div>
         </div>
 
         {/* Current View Title */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-continental-black">{getCurrentViewTitle()}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{getCurrentViewTitle()}</h2>
         </div>
 
         {/* Stats Overview with Continental Colors */}
         <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'} gap-4 md:gap-6 mb-8`}>
-          <Card className="bg-gradient-to-r from-continental-dark-blue to-continental-light-blue text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="spark-gradient text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-continental-white/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Total Registered</p>
+                  <p className={`text-primary-foreground/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Total Registered</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.total}</p>
                 </div>
-                <Users className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-white/70`} />
+                <Users className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary-foreground/70`} />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-continental-dark-green to-continental-light-green text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-aum-purple to-aum-purple-300 text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-continental-white/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Checked In</p>
+                  <p className={`text-primary-foreground/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Checked In</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.checkedIn}</p>
                 </div>
-                <CheckCircle className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-white/70`} />
+                <CheckCircle className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary-foreground/70`} />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-continental-yellow to-continental-yellow/80 text-continental-black border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-aum-orange to-aum-orange-300 text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-continental-black/70 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Pending</p>
+                  <p className={`text-primary-foreground/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Pending</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.pending}</p>
                 </div>
-                <Clock className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-black/60`} />
+                <Clock className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary-foreground/70`} />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-continental-gray1 to-continental-gray2 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-gradient-to-r from-aum-gray-400 to-aum-gray-300 text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-continental-white/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Check-in Rate</p>
+                  <p className={`text-primary-foreground/80 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Check-in Rate</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0}%</p>
                 </div>
-                <QrCode className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-continental-white/70`} />
+                <QrCode className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary-foreground/70`} />
               </div>
             </CardContent>
           </Card>
