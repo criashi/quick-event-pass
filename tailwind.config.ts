@@ -77,6 +77,25 @@ export default {
 					'light-green': '#2db928',
 					'dark-green': '#057855',
 					'light-red': '#ff2d37'
+				},
+				// AUMOVIO brand color aliases referencing CSS variables (HSL)
+				aum: {
+					orange: 'hsl(var(--aum-orange))',
+					'orange-500': 'hsl(var(--aum-orange-500))',
+					'orange-300': 'hsl(var(--aum-orange-300))',
+					'orange-200': 'hsl(var(--aum-orange-200))',
+					'orange-100': 'hsl(var(--aum-orange-100))',
+					purple: 'hsl(var(--aum-purple))',
+					'purple-500': 'hsl(var(--aum-purple-500))',
+					'purple-300': 'hsl(var(--aum-purple-300))',
+					'purple-200': 'hsl(var(--aum-purple-200))',
+					'purple-100': 'hsl(var(--aum-purple-100))',
+					spark: 'hsl(var(--spark))',
+					'gray-500': 'hsl(var(--gray-500))',
+					'gray-400': 'hsl(var(--gray-400))',
+					'gray-300': 'hsl(var(--gray-300))',
+					'gray-200': 'hsl(var(--gray-200))',
+					'gray-100': 'hsl(var(--gray-100))'
 				}
 			},
 			fontFamily: {
