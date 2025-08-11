@@ -23,8 +23,8 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
     .slice(0, 5);
 
   const downloadCSV = () => {
-    const eventName = currentEvent?.name || 'continental-event';
-    const headers = ['Full Name', 'Continental Email', 'Employee Number', 'Business Area', 'Vegetarian/Vegan Option', 'Status', 'Check-in Time'];
+    const eventName = currentEvent?.name || 'aumovio-event';
+    const headers = ['Full Name', 'Aumovio Email', 'Employee Number', 'Business Area', 'Vegetarian/Vegan Option', 'Status', 'Check-in Time'];
     const csvContent = [
       headers.join(','),
       ...attendees.map(attendee => [

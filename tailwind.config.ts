@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -81,7 +80,7 @@ export default {
 				}
 			},
 			fontFamily: {
-				'continental': ['Stag Sans', 'Arial', 'sans-serif'],
+				continental: ['Aumovio Screen', 'Inter', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

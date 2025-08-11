@@ -3,6 +3,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Aumovio Screen font faces */
+@font-face {
+  font-family: 'Aumovio Screen';
+  src: url('../docs/AumovioScreenBETA-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Aumovio Screen';
+  src: url('../docs/AumovioScreenBETA-RegularItalic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Aumovio Screen';
+  src: url('../docs/AumovioScreenBETA-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Aumovio Screen';
+  src: url('../docs/AumovioScreenBETA-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

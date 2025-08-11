@@ -48,7 +48,7 @@ const AttendeeList = ({ attendees, onCheckIn, eventId, onRefresh }: AttendeeList
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg md:text-xl text-gray-800">Continental Employee Management</CardTitle>
+              <CardTitle className="text-lg md:text-xl text-gray-800">Aumovio Employee Management</CardTitle>
               <CardDescription className="text-sm">
                 Search and filter event attendees, view check-in status
               </CardDescription>

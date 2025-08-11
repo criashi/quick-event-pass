@@ -79,6 +79,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       'name': 'full_name',
       'full_name': 'full_name',
       'Email': 'continental_email',
+      'Aumovio Email': 'continental_email',
       'Continental Email': 'continental_email',
       'email': 'continental_email',
       'continental_email': 'continental_email',
@@ -94,6 +95,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
       'Your Name (first and last)': 'full_name',
       'Name (first and last)': 'full_name',
       'Please write your Continental email address:': 'continental_email',
+      'Please write your Aumovio email address:': 'continental_email',
       'Employee Number (e.g. 60001234)': 'employee_number',
       'Please Select Business Area': 'business_area',
       'Do you require a vegetarian or vegan food option?': 'vegetarian_vegan_option',
@@ -408,7 +410,7 @@ const CSVImport = ({ onImportComplete }: CSVImportProps) => {
             <div className="bg-blue-50 p-4 rounded-lg">
               <h4 className="font-medium text-blue-800 mb-2">CSV Format Requirements:</h4>
               <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Required columns: Name (or Full Name), Email (or Continental Email)</li>
+                <li>• Required columns: Name (or Full Name), Email (or Aumovio Email)</li>
                 <li>• Optional columns: Employee Number, Business Area, Vegetarian/Vegan Option</li>
                 <li>• First row should contain column headers</li>
                 <li>• Supports Microsoft Forms exports with long column names</li>

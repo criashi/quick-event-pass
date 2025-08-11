@@ -45,7 +45,7 @@ const AddAttendeeDialog = ({ eventId, onAttendeeAdded }: AddAttendeeDialogProps)
     if (!formData.full_name.trim() || !formData.continental_email.trim()) {
       toast({
         title: "Required Fields Missing",
-        description: "Please fill in the full name and Continental email",
+        description: "Please fill in the full name and Aumovio email",
         variant: "destructive",
       });
       return;
@@ -142,14 +142,14 @@ const AddAttendeeDialog = ({ eventId, onAttendeeAdded }: AddAttendeeDialogProps)
               <div className="space-y-2">
                 <Label htmlFor="continental_email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Continental Email *
+                  Aumovio Email *
                 </Label>
                 <Input
                   id="continental_email"
                   type="email"
                   value={formData.continental_email}
                   onChange={(e) => setFormData(prev => ({ ...prev, continental_email: e.target.value }))}
-                  placeholder="name@continental.com"
+                  placeholder="name@aumovio.com"
                   required
                 />
               </div>
