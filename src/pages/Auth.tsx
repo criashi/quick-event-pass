@@ -34,9 +34,13 @@ const Auth: React.FC = () => {
         {/* Continental Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="p-4 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10" aria-label="Aumovio Logo">
-              <span className="inline-flex items-center justify-center h-10 w-10 text-continental-black font-bold text-2xl leading-none">A</span>
-            </div>
+            <img
+              src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png"
+              alt="Aumovio logo"
+              className="h-10 w-auto"
+              loading="eager"
+              decoding="async"
+            />
           </div>
           <h1 className="text-4xl font-bold text-continental-black mb-2">
             Aumovio Events
