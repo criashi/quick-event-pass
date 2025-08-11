@@ -31,25 +31,21 @@ const Auth: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-continental-gray4 via-continental-white to-continental-silver flex items-center justify-center p-4 font-continental">
       <div className="w-full max-w-md">
-        {/* Continental Header */}
+        {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center justify-center mb-6">
             <img
               src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png"
               alt="Aumovio logo"
-              className="h-10 w-auto"
+              className="h-16 w-auto"
               loading="eager"
               decoding="async"
             />
           </div>
-          <h1 className="text-4xl font-bold text-continental-black mb-2">
-            Aumovio Events
-          </h1>
-          <div className="w-20 h-1 bg-continental-yellow mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-continental-gray1 mb-2">
+          <h2 className="text-xl font-semibold text-foreground mb-2">
             Events Management
           </h2>
-          <p className="text-continental-gray2 font-medium">
+          <p className="text-muted-foreground font-medium">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </p>
         </div>
