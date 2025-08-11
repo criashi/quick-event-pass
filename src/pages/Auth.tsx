@@ -34,16 +34,12 @@ const Auth: React.FC = () => {
         {/* Continental Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="p-4 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10">
-              <img 
-                src="/lovable-uploads/7db59a9c-fbb6-4e19-951e-7a41b8ae2800.png" 
-                alt="Continental Logo" 
-                className="h-10 w-10 object-contain"
-              />
+            <div className="p-4 bg-gradient-to-r from-continental-yellow to-continental-yellow/80 rounded-xl shadow-lg border-2 border-continental-black/10" aria-label="Aumovio Logo">
+              <span className="inline-flex items-center justify-center h-10 w-10 text-continental-black font-bold text-2xl leading-none">A</span>
             </div>
           </div>
           <h1 className="text-4xl font-bold text-continental-black mb-2">
-            Continental
+            Aumovio Events
           </h1>
           <div className="w-20 h-1 bg-continental-yellow mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-continental-gray1 mb-2">
