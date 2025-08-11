@@ -34,7 +34,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
 
   return (
     <Card className="w-full max-w-md mx-auto bg-card border-border shadow-xl font-continental">
-      <CardHeader className="spark-gradient text-primary-foreground rounded-t-lg">
+      <CardHeader className="brand-gradient text-primary-foreground rounded-t-lg">
         <CardTitle className="text-2xl text-center font-bold">Sign In</CardTitle>
         <CardDescription className="text-center text-primary-foreground/80">
           Enter your credentials to access the system

@@ -53,7 +53,7 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
     <div className="space-y-6">
       {/* Current Event Header */}
       {currentEvent && (
-        <Card className="spark-gradient text-primary-foreground border-0 shadow-lg">
+        <Card className="brand-gradient text-primary-foreground border-0 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

@@ -199,7 +199,7 @@ const Index = () => {
 
         {/* Stats Overview with Continental Colors */}
         <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'} gap-4 md:gap-6 mb-8`}>
-          <Card className="spark-gradient text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="brand-gradient text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex items-center justify-between">
                 <div>
