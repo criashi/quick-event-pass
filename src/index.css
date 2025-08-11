@@ -73,6 +73,27 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* AUMOVIO brand tokens (HSL) */
+    --aum-orange: 14 100% 52%;        /* #FF4208 */
+    --aum-orange-500: 14 95% 44%;     /* #DA3806 */
+    --aum-orange-300: 28 100% 62%;    /* #FF983B */
+    --aum-orange-200: 14 100% 72%;    /* #FF906E */
+    --aum-orange-100: 14 100% 82%;    /* #FFB7A1 */
+
+    --aum-purple: 267 64% 42%;        /* #4827AF */
+    --aum-purple-500: 255 63% 30%;    /* #341C7D */
+    --aum-purple-300: 254 63% 52%;    /* #5C37D2 */
+    --aum-purple-200: 255 64% 62%;    /* #7E60DC */
+    --aum-purple-100: 232 57% 76%;    /* #A0A8E5 */
+
+    --spark: 30 100% 52%;             /* #FF850B */
+
+    --gray-500: 0 0% 47%;             /* #787878 */
+    --gray-400: 0 0% 67%;             /* #AAAAAA */
+    --gray-300: 0 0% 78%;             /* #C8C8C8 */
+    --gray-200: 0 0% 86%;             /* #DCDCDC */
+    --gray-100: 0 0% 94%;             /* #F0F0F0 */
   }
 
   .dark {
@@ -111,6 +132,27 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* AUMOVIO brand tokens (same in dark) */
+    --aum-orange: 14 100% 52%;
+    --aum-orange-500: 14 95% 44%;
+    --aum-orange-300: 28 100% 62%;
+    --aum-orange-200: 14 100% 72%;
+    --aum-orange-100: 14 100% 82%;
+
+    --aum-purple: 267 64% 42%;
+    --aum-purple-500: 255 63% 30%;
+    --aum-purple-300: 254 63% 52%;
+    --aum-purple-200: 255 64% 62%;
+    --aum-purple-100: 232 57% 76%;
+
+    --spark: 30 100% 52%;
+
+    --gray-500: 0 0% 47%;
+    --gray-400: 0 0% 67%;
+    --gray-300: 0 0% 78%;
+    --gray-200: 0 0% 86%;
+    --gray-100: 0 0% 94%;
   }
 }
 
@@ -130,6 +172,23 @@
   
   .continental-text-gradient {
     background: linear-gradient(135deg, #ffa500 0%, #000000 60%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* AUMOVIO gradients & text utilities */
+  .spark-gradient {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--aum-orange)) 0%,
+      hsl(var(--spark)) 50%,
+      hsl(var(--aum-purple)) 100%
+    );
+  }
+
+  .brand-text-gradient {
+    background-image: linear-gradient(135deg, hsl(var(--aum-orange)) 0%, hsl(var(--aum-purple)) 60%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
