@@ -18,6 +18,10 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Branded variants
+        brand: "bg-aum-orange text-primary-foreground hover:bg-aum-orange-500",
+        "brand-outline": "border border-aum-orange text-aum-orange hover:bg-aum-orange hover:text-primary-foreground",
+        "brand-gradient": "spark-gradient text-primary-foreground hover:opacity-90",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -53,12 +53,12 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
     <div className="space-y-6">
       {/* Current Event Header */}
       {currentEvent && (
-        <Card className="bg-gradient-to-r from-continental-dark-blue to-continental-light-blue text-white border-0 shadow-lg">
+        <Card className="spark-gradient text-primary-foreground border-0 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-2xl">{currentEvent.name}</CardTitle>
-                <Badge variant="secondary" className="bg-continental-yellow text-continental-black mt-2">
+                <Badge variant="secondary" className="bg-aum-orange text-primary-foreground mt-2">
                   Active Event
                 </Badge>
               </div>
@@ -85,20 +85,20 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
               )}
             </div>
             {currentEvent.description && (
-              <p className="mt-3 text-continental-white/90">{currentEvent.description}</p>
+              <p className="mt-3 text-primary-foreground/90">{currentEvent.description}</p>
             )}
           </CardContent>
         </Card>
       )}
 
       {!currentEvent && (
-        <Card className="bg-yellow-50 border-yellow-200">
+        <Card className="bg-aum-orange-100 border-aum-orange-200">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-yellow-600" />
-              <p className="text-yellow-800 font-medium">No Active Event</p>
+              <Calendar className="h-5 w-5 text-aum-orange" />
+              <p className="text-aum-orange-500 font-medium">No Active Event</p>
             </div>
-            <p className="text-yellow-700 text-sm mt-1">
+            <p className="text-aum-orange-500 text-sm mt-1">
               Please set up and activate an event in Event Setup to start managing attendees.
             </p>
           </CardContent>
@@ -111,7 +111,7 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl text-gray-800">
+                <CardTitle className="text-2xl text-foreground">
                   {currentEvent ? `${currentEvent.name} Overview` : 'Event Overview'}
                 </CardTitle>
                 <CardDescription>Real-time check-in statistics and progress</CardDescription>
@@ -119,7 +119,7 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
               <Button 
                 onClick={downloadCSV} 
                 disabled={!currentEvent}
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="brand"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Export CSV
@@ -131,12 +131,12 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
               {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium text-gray-700">Check-in Progress</span>
-                  <span className="text-gray-600">{stats.checkedIn} of {stats.total}</span>
+                  <span className="font-medium text-foreground">Check-in Progress</span>
+                  <span className="text-muted-foreground">{stats.checkedIn} of {stats.total}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
+                <div className="w-full bg-aum-gray-200 rounded-full h-3">
                   <div 
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-aum-purple to-aum-purple-300 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${stats.total > 0 ? (stats.checkedIn / stats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
@@ -148,8 +148,8 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
         {/* Recent Check-ins */}
         <Card className="shadow-lg border-0">
           <CardHeader>
-            <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-xl text-foreground flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-aum-purple" />
               Recent Check-ins
             </CardTitle>
             <CardDescription>Latest employee arrivals</CardDescription>
@@ -158,23 +158,23 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
             <div className="space-y-3">
               {recentCheckIns.length > 0 ? (
                 recentCheckIns.map((attendee) => (
-                  <div key={attendee.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                  <div key={attendee.id} className="flex items-center justify-between p-3 bg-aum-purple-100 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-800">{attendee.full_name}</p>
-                      <p className="text-sm text-gray-600">{attendee.business_area || 'N/A'}</p>
+                      <p className="font-medium text-foreground">{attendee.full_name}</p>
+                      <p className="text-sm text-muted-foreground">{attendee.business_area || 'N/A'}</p>
                     </div>
                     <div className="text-right">
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge variant="secondary" className="bg-aum-purple text-primary-foreground">
                         Checked In
                       </Badge>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {new Date(attendee.check_in_time!).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-gray-500">
+                <div className="text-center py-6 text-muted-foreground">
                   <p>No recent check-ins</p>
                   <p className="text-sm">
                     {currentEvent ? 'Start scanning QR codes to see activity' : 'Set up an active event first'}
@@ -189,7 +189,7 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
       {/* Business Area Breakdown */}
       <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle className="text-xl text-gray-800">Business Area Breakdown</CardTitle>
+          <CardTitle className="text-xl text-foreground">Business Area Breakdown</CardTitle>
           <CardDescription>Check-in status by business area</CardDescription>
         </CardHeader>
         <CardContent>
@@ -208,20 +208,20 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
                   return acc;
                 }, {} as Record<string, { total: number; checkedIn: number }>)
               ).map(([area, data]) => (
-                <div key={area} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2 text-sm">{area}</h3>
+                <div key={area} className="p-4 bg-gradient-to-br from-aum-gray-100 to-aum-gray-200 rounded-lg">
+                  <h3 className="font-semibold text-foreground mb-2 text-sm">{area}</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Progress</span>
                       <span>{data.checkedIn}/{data.total}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-aum-gray-300 rounded-full h-2">
                       <div 
-                        className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full"
+                        className="bg-gradient-to-r from-aum-orange to-aum-orange-300 h-2 rounded-full"
                         style={{ width: `${data.total > 0 ? (data.checkedIn / data.total) * 100 : 0}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-muted-foreground">
                       {data.total > 0 ? Math.round((data.checkedIn / data.total) * 100) : 0}% checked in
                     </p>
                   </div>
@@ -229,7 +229,7 @@ const Dashboard = ({ attendees, stats, currentEvent }: DashboardProps) => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <p>No attendees registered yet</p>
               <p className="text-sm">
                 {currentEvent ? 'Import attendees to see business area breakdown' : 'Set up an active event and import attendees'}

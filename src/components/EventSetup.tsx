@@ -71,12 +71,12 @@ const EventSetup = () => {
     <div className="space-y-4 md:space-y-6">
       {/* Current Active Event - FORCE DISPLAY WITH DETAILED LOGGING */}
       {activeEvent ? (
-        <Card className="bg-gradient-to-r from-continental-light-green to-continental-dark-green text-white">
+        <Card className="bg-gradient-to-r from-aum-purple to-aum-purple-300 text-primary-foreground">
           <CardHeader className="pb-3 md:pb-6">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <CardTitle className="text-lg md:text-xl truncate">{activeEvent.name}</CardTitle>
-                <Badge variant="secondary" className="bg-continental-yellow text-continental-black mt-2 text-xs">
+                <Badge variant="secondary" className="bg-aum-orange text-primary-foreground mt-2 text-xs">
                   Active Event
                 </Badge>
               </div>
@@ -103,16 +103,16 @@ const EventSetup = () => {
               )}
             </div>
             {activeEvent.description && (
-              <p className="mt-3 text-sm md:text-base text-continental-white/90 line-clamp-2">{activeEvent.description}</p>
+              <p className="mt-3 text-sm md:text-base text-primary-foreground/90 line-clamp-2">{activeEvent.description}</p>
             )}
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-2 border-dashed border-gray-300">
+        <Card className="border-2 border-dashed border-aum-gray-300">
           <CardContent className="p-6 text-center">
-            <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Active Event</h3>
-            <p className="text-gray-500">No event is currently set as active. Set an event as active to manage it.</p>
+            <Calendar className="h-12 w-12 mx-auto mb-4 text-aum-gray-400" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">No Active Event</h3>
+            <p className="text-muted-foreground">No event is currently set as active. Set an event as active to manage it.</p>
           </CardContent>
         </Card>
       )}
@@ -121,7 +121,8 @@ const EventSetup = () => {
       <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
         <Button 
           onClick={() => setShowEventForm(true)}
-          className="bg-continental-yellow text-continental-black hover:bg-continental-yellow/90 w-full sm:w-auto"
+          variant="brand"
+          className="w-full sm:w-auto"
           size="sm"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -131,7 +132,7 @@ const EventSetup = () => {
           <Button 
             onClick={() => setShowFieldMapping(true)}
             variant="outline"
-            className="border-continental-gray2 w-full sm:w-auto"
+            className="border-aum-gray-300 w-full sm:w-auto"
             size="sm"
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -157,7 +158,7 @@ const EventSetup = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold text-sm md:text-base truncate">{event.name}</h3>
                       {event.is_active && (
-                        <Badge className="bg-continental-light-green text-white text-xs flex-shrink-0">Active</Badge>
+                        <Badge className="bg-aum-purple text-primary-foreground text-xs flex-shrink-0">Active</Badge>
                       )}
                     </div>
                     <div className="space-y-1 md:space-y-0 md:flex md:items-center md:gap-4 text-xs md:text-sm text-gray-600">

@@ -160,7 +160,7 @@ const EventForm = ({ onClose, onEventCreated }: EventFormProps) => {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" className="bg-continental-yellow text-continental-black hover:bg-continental-yellow/90">
+              <Button type="submit" variant="brand">
                 Create Event
               </Button>
               <Button type="button" variant="outline" onClick={onClose}>
