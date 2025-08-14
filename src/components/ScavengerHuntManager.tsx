@@ -304,35 +304,47 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Scavenger Hunt</CardTitle>
-              <CardDescription>
-                Enable and manage a QR-based trivia experience for your event
-              </CardDescription>
+    <div className="space-y-8">
+      <Card className="border-none brand-gradient p-1 rounded-xl">
+        <div className="bg-background rounded-lg">
+          <CardHeader className="pb-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <CardTitle className="text-2xl font-bold brand-text-gradient">
+                  Scavenger Hunt Experience
+                </CardTitle>
+                <CardDescription className="text-base text-muted-foreground">
+                  Create an engaging QR-based trivia adventure for your event attendees
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {event.scavenger_hunt_enabled ? 'Active' : 'Inactive'}
+                </span>
+                <Switch
+                  checked={event.scavenger_hunt_enabled || false}
+                  onCheckedChange={toggleScavengerHunt}
+                  className="data-[state=checked]:bg-aum-orange"
+                />
+              </div>
             </div>
-            <Switch
-              checked={event.scavenger_hunt_enabled || false}
-              onCheckedChange={toggleScavengerHunt}
-            />
-          </div>
-        </CardHeader>
+          </CardHeader>
+        </div>
       </Card>
 
       {event.scavenger_hunt_enabled && (
         <>
           {!scavengerHunt ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Create Scavenger Hunt</CardTitle>
-                <CardDescription>
-                  Set up locations and trivia questions for your scavenger hunt
+            <Card className="border-aum-orange/20 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-aum-orange/5 to-aum-purple/5 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-aum-orange">
+                  Create Your Scavenger Hunt
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Design an interactive adventure with locations and trivia challenges
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="hunt-name">Hunt Name</Label>
@@ -344,25 +356,38 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                     />
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <Label>Locations & Questions</Label>
-                      <Button onClick={addLocation} size="sm">
-                        <Plus className="w-4 h-4 mr-1" />
+                      <Label className="text-lg font-semibold text-aum-purple">
+                        Hunt Locations & Challenges
+                      </Label>
+                      <Button 
+                        onClick={addLocation} 
+                        size="sm"
+                        variant="brand"
+                        className="shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
                         Add Location
                       </Button>
                     </div>
 
                     {formData.locations.map((location, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="space-y-3">
+                      <Card key={index} className="p-6 border-aum-orange/10 bg-gradient-to-br from-aum-orange/5 to-aum-purple/5">
+                        <div className="space-y-4">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium">Location {index + 1}</h4>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 rounded-full bg-aum-orange text-white flex items-center justify-center text-sm font-bold">
+                                {index + 1}
+                              </div>
+                              <h4 className="font-semibold text-aum-purple">Location Challenge</h4>
+                            </div>
                             {formData.locations.length > 1 && (
                               <Button
                                 onClick={() => removeLocation(index)}
                                 size="sm"
                                 variant="outline"
+                                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -405,7 +430,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                             <Button
                               onClick={() => updateLocation(index, 'options', [...location.options, ''])}
                               size="sm"
-                              variant="outline"
+                              variant="brand-outline"
                               className="mt-2"
                             >
                               Add Option
@@ -425,62 +450,109 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                     ))}
                   </div>
 
-                  <Button onClick={createScavengerHunt} className="w-full">
-                    Create Scavenger Hunt
+                  <Button 
+                    onClick={createScavengerHunt} 
+                    className="w-full brand-gradient text-white font-semibold py-3 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    🚀 Launch Scavenger Hunt
                   </Button>
                 </div>
               </CardContent>
             </Card>
           ) : (
-            <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="participants">Participants</TabsTrigger>
-                <TabsTrigger value="qr-codes">QR Codes</TabsTrigger>
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3 bg-aum-orange/10 p-1 rounded-lg">
+                <TabsTrigger 
+                  value="overview"
+                  className="data-[state=active]:bg-aum-orange data-[state=active]:text-white font-medium"
+                >
+                  📊 Overview
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="participants"
+                  className="data-[state=active]:bg-aum-orange data-[state=active]:text-white font-medium"
+                >
+                  👥 Participants
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="qr-codes"
+                  className="data-[state=active]:bg-aum-orange data-[state=active]:text-white font-medium"
+                >
+                  📱 QR Codes
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card className="border-none bg-gradient-to-br from-aum-orange/10 to-aum-orange/5 shadow-lg">
                     <CardContent className="pt-6">
-                      <div className="text-center">
-                        <Trophy className="w-8 h-8 mx-auto mb-2 text-aum-orange" />
-                        <div className="text-2xl font-bold">{locations.length}</div>
-                        <div className="text-sm text-muted-foreground">Locations</div>
+                      <div className="text-center space-y-2">
+                        <div className="w-12 h-12 mx-auto bg-aum-orange rounded-full flex items-center justify-center">
+                          <Trophy className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-3xl font-bold text-aum-orange">{locations.length}</div>
+                        <div className="text-sm font-medium text-muted-foreground">Hunt Locations</div>
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="border-none bg-gradient-to-br from-aum-purple/10 to-aum-purple/5 shadow-lg">
                     <CardContent className="pt-6">
-                      <div className="text-center">
-                        <Users className="w-8 h-8 mx-auto mb-2 text-aum-orange" />
-                        <div className="text-2xl font-bold">{participants.length}</div>
-                        <div className="text-sm text-muted-foreground">Participants</div>
+                      <div className="text-center space-y-2">
+                        <div className="w-12 h-12 mx-auto bg-aum-purple rounded-full flex items-center justify-center">
+                          <Users className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-3xl font-bold text-aum-purple">{participants.length}</div>
+                        <div className="text-sm font-medium text-muted-foreground">Active Participants</div>
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="border-none bg-gradient-to-br from-aum-spark/10 to-aum-spark/5 shadow-lg">
                     <CardContent className="pt-6">
-                      <div className="text-center">
-                        <Trophy className="w-8 h-8 mx-auto mb-2 text-aum-orange" />
-                        <div className="text-2xl font-bold">
+                      <div className="text-center space-y-2">
+                        <div className="w-12 h-12 mx-auto bg-aum-spark rounded-full flex items-center justify-center">
+                          <Trophy className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-3xl font-bold text-aum-spark">
                           {participants.filter(p => p.completed_at).length}
                         </div>
-                        <div className="text-sm text-muted-foreground">Completed</div>
+                        <div className="text-sm font-medium text-muted-foreground">Hunt Completed</div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
+                
+                {scavengerHunt && (
+                  <Card className="mt-6 border-aum-orange/20 bg-gradient-to-r from-aum-orange/5 to-aum-purple/5">
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold brand-text-gradient">
+                        🏆 {scavengerHunt.name}
+                      </CardTitle>
+                      <CardDescription>
+                        Your scavenger hunt is live and ready for participants!
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                )}
               </TabsContent>
 
               <TabsContent value="participants">
-                <Card>
-                  <CardHeader>
+                <Card className="border-aum-purple/20 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-aum-purple/5 to-aum-orange/5 rounded-t-lg">
                     <div className="flex items-center justify-between">
-                      <CardTitle>Participants</CardTitle>
-                      <Button onClick={exportResults}>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export CSV
+                      <div>
+                        <CardTitle className="text-xl font-bold text-aum-purple flex items-center">
+                          👥 Participant Dashboard
+                        </CardTitle>
+                        <CardDescription>
+                          Track progress and engagement across your scavenger hunt
+                        </CardDescription>
+                      </div>
+                      <Button 
+                        onClick={exportResults} 
+                        variant="brand-outline"
+                        className="shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        📊 Export Results
                       </Button>
                     </div>
                   </CardHeader>
@@ -513,39 +585,74 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
               </TabsContent>
 
               <TabsContent value="qr-codes">
-                <Card>
-                  <CardHeader>
+                <Card className="border-aum-orange/20 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-aum-orange/5 to-aum-purple/5 rounded-t-lg">
                     <div className="flex items-center justify-between">
-                      <CardTitle>QR Codes</CardTitle>
-                      <Button onClick={downloadQRCodes}>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-aum-orange flex items-center">
+                          📱 QR Code Manager
+                        </CardTitle>
+                        <CardDescription>
+                          Generate and download QR codes for your scavenger hunt locations
+                        </CardDescription>
+                      </div>
+                      <Button 
+                        onClick={downloadQRCodes} 
+                        variant="brand"
+                        className="shadow-lg hover:shadow-xl transition-all"
+                      >
                         <Download className="w-4 h-4 mr-2" />
-                        Download All
+                        📥 Download All QR Codes
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-4 border rounded">
-                        <div className="flex items-center gap-2 mb-2">
-                          <QrCode className="w-5 h-5" />
-                          <span className="font-medium">Signup QR Code</span>
+                  <CardContent className="pt-6">
+                    <div className="space-y-8">
+                      <div className="bg-gradient-to-r from-aum-orange/10 to-aum-orange/5 rounded-xl p-6">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-10 h-10 bg-aum-orange rounded-full flex items-center justify-center">
+                            <QrCode className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-aum-orange text-lg">Registration QR Code</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Share this QR code for participants to join the hunt
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <Badge variant="secondary" className="font-mono text-xs bg-white border border-aum-orange/20">
                           {qrCodes.signup}
-                        </div>
+                        </Badge>
                       </div>
 
-                      {locations.map((location) => (
-                        <div key={location.id} className="p-4 border rounded">
-                          <div className="flex items-center gap-2 mb-2">
-                            <QrCode className="w-5 h-5" />
-                            <span className="font-medium">{location.name}</span>
+                      <div className="bg-gradient-to-r from-aum-purple/10 to-aum-purple/5 rounded-xl p-6">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-10 h-10 bg-aum-purple rounded-full flex items-center justify-center">
+                            <Trophy className="w-5 h-5 text-white" />
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {qrCodes[location.id]}
+                          <div>
+                            <h3 className="font-bold text-aum-purple text-lg">Location QR Codes</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Place these QR codes at each designated hunt location
+                            </p>
                           </div>
                         </div>
-                      ))}
+                        <div className="grid gap-3">
+                          {locations.map((location) => (
+                            <div key={location.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-aum-purple/20 shadow-sm">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-aum-purple text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                  {location.location_order}
+                                </div>
+                                <span className="font-semibold text-aum-purple">{location.name}</span>
+                              </div>
+                              <Badge variant="secondary" className="font-mono text-xs bg-aum-purple/10 border border-aum-purple/20">
+                                {qrCodes[location.id]}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
