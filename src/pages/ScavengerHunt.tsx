@@ -43,11 +43,23 @@ const ScavengerHuntPage: React.FC = () => {
 
   const fetchHuntBySignupToken = async (signupToken: string) => {
     try {
+      // First get the active event to ensure we're working with the correct event context
+      const { data: activeEvents, error: eventError } = await supabase
+        .from('events')
+        .select('id')
+        .eq('is_active', true);
+
+      if (eventError) throw eventError;
+
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
-        .select('*')
+        .select(`
+          *,
+          events!inner (id, is_active)
+        `)
         .eq('signup_qr_token', signupToken)
         .eq('is_active', true)
+        .eq('events.is_active', true)
         .single();
 
       if (huntError) throw huntError;
@@ -58,7 +70,7 @@ const ScavengerHuntPage: React.FC = () => {
       console.error('Error fetching hunt:', error);
       toast({
         title: "Error",
-        description: "Invalid or expired signup link",
+        description: "Invalid or expired signup link, or hunt not associated with active event",
         variant: "destructive",
       });
     } finally {
@@ -72,9 +84,14 @@ const ScavengerHuntPage: React.FC = () => {
         .from('scavenger_locations')
         .select(`
           *,
-          scavenger_hunts (*)
+          scavenger_hunts!inner (
+            *,
+            events!inner (id, is_active)
+          )
         `)
         .eq('qr_token', locToken)
+        .eq('scavenger_hunts.is_active', true)
+        .eq('scavenger_hunts.events.is_active', true)
         .single();
 
       if (locationError) throw locationError;
