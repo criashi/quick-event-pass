@@ -106,11 +106,14 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
   };
 
   const generateQRCodes = async (hunt: ScavengerHunt) => {
+    // Use the current domain for QR code generation
     const baseUrl = window.location.origin;
+    console.log('QR Code base URL:', baseUrl);
     const codes: { [key: string]: string } = {};
     
     // Generate signup QR code
     codes.signup = `${baseUrl}/hunt/${hunt.signup_qr_token}`;
+    console.log('Generated signup QR URL:', codes.signup);
     
     // Generate location QR codes
     locations.forEach(location => {
@@ -242,6 +245,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
         huntId: scavengerHunt.id
       };
       const signupUrl = `${window.location.origin}/hunt/${scavengerHunt.signup_qr_token}`;
+      console.log('Download QR signup URL:', signupUrl);
       const signupQRCode = await QRCodeLib.toDataURL(signupUrl, { width: 300 });
       zip.file("signup-qr-code.png", signupQRCode.split(',')[1], { base64: true });
 
