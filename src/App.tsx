@@ -34,8 +34,6 @@ const App: React.FC = () => (
             {/* Scavenger Hunt Routes - Public Access */}
             <Route path="/hunt/:token" element={<ScavengerHunt />} />
             <Route path="/hunt/location/:locationToken" element={<ScavengerHunt />} />
-            {/* Test route */}
-            <Route path="/test" element={<div>Test route works!</div>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
