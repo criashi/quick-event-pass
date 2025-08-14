@@ -158,6 +158,15 @@ const EventForm = ({ onClose, onEventCreated }: EventFormProps) => {
                 />
                 <Label htmlFor="is_active">Set as active event</Label>
               </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="scavenger_hunt_enabled"
+                  checked={formData.scavenger_hunt_enabled}
+                  onCheckedChange={(checked) => handleInputChange('scavenger_hunt_enabled', checked)}
+                />
+                <Label htmlFor="scavenger_hunt_enabled">Enable Scavenger Hunt</Label>
+              </div>
             </div>
 
             <div className="flex gap-3 pt-4">

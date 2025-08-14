@@ -33,7 +33,8 @@ const EditEventDialog = ({ event, open, onClose, onEventUpdated }: EditEventDial
     end_time: event.end_time || '',
     location: event.location || '',
     timezone: event.timezone,
-    is_active: event.is_active
+    is_active: event.is_active,
+    scavenger_hunt_enabled: event.scavenger_hunt_enabled || false
   });
   const [loading, setLoading] = useState(false);
 
@@ -148,6 +149,15 @@ const EditEventDialog = ({ event, open, onClose, onEventUpdated }: EditEventDial
               onCheckedChange={(checked) => handleInputChange('is_active', checked)}
             />
             <Label htmlFor="is_active">Set as Active Event</Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="scavenger_hunt_enabled"
+              checked={formData.scavenger_hunt_enabled}
+              onCheckedChange={(checked) => handleInputChange('scavenger_hunt_enabled', checked)}
+            />
+            <Label htmlFor="scavenger_hunt_enabled">Enable Scavenger Hunt</Label>
           </div>
 
           <DialogFooter>
