@@ -32,18 +32,31 @@ const ScavengerHuntPage: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
 
   useEffect(() => {
+    console.log('=== DEBUG: ScavengerHunt useEffect START ===');
+    console.log('token from useParams:', token);
+    console.log('locationToken from useParams:', locationToken);
+    console.log('token type:', typeof token);
+    console.log('locationToken type:', typeof locationToken);
+    
     if (token) {
+      console.log('Following signup flow with token:', token);
       // Signup flow
       fetchHuntBySignupToken(token);
     } else if (locationToken) {
+      console.log('Following location flow with locationToken:', locationToken);
       // Location trivia flow
       fetchLocationByToken(locationToken);
+    } else {
+      console.log('No token or locationToken found!');
     }
   }, [token, locationToken]);
 
   const fetchHuntBySignupToken = async (signupToken: string) => {
     try {
+      console.log('=== DEBUG: fetchHuntBySignupToken START ===');
       console.log('fetchHuntBySignupToken: Starting with token:', signupToken);
+      console.log('fetchHuntBySignupToken: Token type:', typeof signupToken);
+      console.log('fetchHuntBySignupToken: Token length:', signupToken?.length);
       
       // First, let's see what scavenger hunts exist
       const { data: allHunts, error: allHuntsError } = await supabase
