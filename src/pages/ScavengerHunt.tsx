@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ScavengerHunt, ScavengerLocation, ScavengerParticipant, ScavengerLocationDB, ScavengerParticipantDB } from "@/types/scavenger";
 
 const ScavengerHuntPage: React.FC = () => {
-  console.log('=== ScavengerHunt component rendered ===');
   const { token, locationToken } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -33,99 +32,33 @@ const ScavengerHuntPage: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
 
   useEffect(() => {
-    console.log('=== DEBUG: ScavengerHunt useEffect START ===');
-    console.log('token from useParams:', token);
-    console.log('locationToken from useParams:', locationToken);
-    console.log('token type:', typeof token);
-    console.log('locationToken type:', typeof locationToken);
-    
     if (token) {
-      console.log('Following signup flow with token:', token);
       // Signup flow
       fetchHuntBySignupToken(token);
     } else if (locationToken) {
-      console.log('Following location flow with locationToken:', locationToken);
       // Location trivia flow
       fetchLocationByToken(locationToken);
-    } else {
-      console.log('No token or locationToken found!');
     }
   }, [token, locationToken]);
 
   const fetchHuntBySignupToken = async (signupToken: string) => {
     try {
-      console.log('=== DEBUG: fetchHuntBySignupToken START ===');
-      console.log('fetchHuntBySignupToken: Starting with token:', signupToken);
-      console.log('fetchHuntBySignupToken: Token type:', typeof signupToken);
-      console.log('fetchHuntBySignupToken: Token length:', signupToken?.length);
-      
-      // First, let's see what scavenger hunts exist
-      const { data: allHunts, error: allHuntsError } = await supabase
-        .from('scavenger_hunts')
-        .select('*');
-      
-      console.log('fetchHuntBySignupToken: All scavenger hunts:', allHunts);
-      console.log('fetchHuntBySignupToken: All hunts error:', allHuntsError);
-
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
         .select('*')
         .eq('signup_qr_token', signupToken)
         .eq('is_active', true)
-        .maybeSingle();
+        .single();
 
-      console.log('fetchHuntBySignupToken: Hunt query result:', huntData);
-      console.log('fetchHuntBySignupToken: Hunt query error:', huntError);
+      if (huntError) throw huntError;
 
-      if (huntError) {
-        console.error('fetchHuntBySignupToken: Database error:', huntError);
-        throw huntError;
-      }
-
-      if (!huntData) {
-        console.log('fetchHuntBySignupToken: No hunt found for token:', signupToken);
-        throw new Error('No scavenger hunt found for this token');
-      }
-
-      // Fetch the associated event data separately
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('id, name, is_active, scavenger_hunt_enabled')
-        .eq('id', huntData.event_id)
-        .maybeSingle();
-
-      console.log('fetchHuntBySignupToken: Event query result:', eventData);
-      console.log('fetchHuntBySignupToken: Event query error:', eventError);
-
-      if (eventError) {
-        console.error('fetchHuntBySignupToken: Event database error:', eventError);
-        throw eventError;
-      }
-
-      if (!eventData) {
-        console.log('fetchHuntBySignupToken: Event not found for hunt:', huntData.event_id);
-        throw new Error('Event not found for this hunt');
-      }
-
-      // Verify the associated event is active and has scavenger hunt enabled
-      if (!eventData.is_active) {
-        console.log('fetchHuntBySignupToken: Event is not active:', eventData);
-        throw new Error('Hunt belongs to inactive event');
-      }
-
-      if (!eventData.scavenger_hunt_enabled) {
-        console.log('fetchHuntBySignupToken: Scavenger hunt not enabled for event:', eventData);
-        throw new Error('Scavenger hunt not enabled for this event');
-      }
-
-      console.log('fetchHuntBySignupToken: Valid hunt found:', huntData);
       setHunt(huntData);
       await fetchLocations(huntData.id);
     } catch (error) {
-      console.error('fetchHuntBySignupToken: Error:', error);
+      console.error('Error fetching hunt:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Invalid or expired signup link",
+        description: "Invalid or expired signup link",
         variant: "destructive",
       });
     } finally {
@@ -137,43 +70,14 @@ const ScavengerHuntPage: React.FC = () => {
     try {
       const { data: locationData, error: locationError } = await supabase
         .from('scavenger_locations')
-        .select('*')
+        .select(`
+          *,
+          scavenger_hunts (*)
+        `)
         .eq('qr_token', locToken)
         .single();
 
       if (locationError) throw locationError;
-
-      // Fetch the scavenger hunt data separately
-      const { data: huntData, error: huntError } = await supabase
-        .from('scavenger_hunts')
-        .select('*')
-        .eq('id', locationData.scavenger_hunt_id)
-        .single();
-
-      if (huntError) throw huntError;
-
-      // Verify the hunt is active
-      if (!huntData.is_active) {
-        throw new Error('Scavenger hunt is not active');
-      }
-
-      // Fetch the event data separately
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('id, name, is_active, scavenger_hunt_enabled')
-        .eq('id', huntData.event_id)
-        .single();
-
-      if (eventError) throw eventError;
-
-      // Verify the event is active and has scavenger hunt enabled
-      if (!eventData.is_active) {
-        throw new Error('Hunt belongs to inactive event');
-      }
-
-      if (!eventData.scavenger_hunt_enabled) {
-        throw new Error('Scavenger hunt not enabled for this event');
-      }
 
       // Convert database types to frontend types
       const convertedLocation = {
@@ -181,16 +85,16 @@ const ScavengerHuntPage: React.FC = () => {
         options: Array.isArray(locationData.options) ? locationData.options.filter(opt => typeof opt === 'string') : []
       };
       setCurrentLocation(convertedLocation);
-      setHunt(huntData);
-      await fetchLocations(huntData.id);
+      setHunt(locationData.scavenger_hunts);
+      await fetchLocations(locationData.scavenger_hunts.id);
       
       // Check for existing participant
       const storedEmail = localStorage.getItem('scavenger_email');
       if (storedEmail) {
-        await fetchParticipant(huntData.id, storedEmail);
+        await fetchParticipant(locationData.scavenger_hunts.id, storedEmail);
       } else {
         // Redirect to signup if no stored email
-        navigate(`/hunt/${huntData.signup_qr_token}`);
+        navigate(`/hunt/${locationData.scavenger_hunts.signup_qr_token}`);
         return;
       }
     } catch (error) {
@@ -365,21 +269,10 @@ const ScavengerHuntPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-aum-orange via-aum-orange/80 to-aum-purple relative">
-        {/* Logo at top */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <img 
-            src="/lovable-uploads/41001a42-1b3e-42c9-af15-6da3d23e858f.png" 
-            alt="Aumovio Logo" 
-            className="h-16 w-auto object-contain"
-          />
-        </div>
-        
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto text-white" />
-            <p className="text-lg font-medium text-white">Loading scavenger hunt...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p>Loading scavenger hunt...</p>
         </div>
       </div>
     );
@@ -387,26 +280,15 @@ const ScavengerHuntPage: React.FC = () => {
 
   if (!hunt) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-aum-orange via-aum-orange/80 to-aum-purple relative">
-        {/* Logo at top */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <img 
-            src="/lovable-uploads/41001a42-1b3e-42c9-af15-6da3d23e858f.png" 
-            alt="Aumovio Logo" 
-            className="h-16 w-auto object-contain"
-          />
-        </div>
-        
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <Card className="w-full max-w-md border-white/20 shadow-xl bg-white/10 backdrop-blur">
-            <CardHeader className="text-center">
-              <CardTitle className="text-center text-white text-xl">🔍 Hunt Not Found</CardTitle>
-              <CardDescription className="text-center text-white/80">
-                The scavenger hunt you're looking for doesn't exist or has expired.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center text-destructive">Hunt Not Found</CardTitle>
+            <CardDescription className="text-center">
+              The scavenger hunt you're looking for doesn't exist or has expired.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
@@ -414,68 +296,53 @@ const ScavengerHuntPage: React.FC = () => {
   // Registration/Signup flow
   if (token && !participant) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-aum-orange via-aum-orange/80 to-aum-purple relative">
-        {/* Logo at top */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <img 
-            src="/lovable-uploads/41001a42-1b3e-42c9-af15-6da3d23e858f.png" 
-            alt="Aumovio Logo" 
-            className="h-16 w-auto object-contain"
-          />
-        </div>
-        
-        <div className="min-h-screen flex items-center justify-center p-4 pt-32">
-          <Card className="w-full max-w-md border-white/20 shadow-xl bg-white/10 backdrop-blur">
-            <CardHeader className="text-center">
-              <Trophy className="w-12 h-12 mx-auto mb-4 text-white animate-pulse" />
-              <CardTitle className="text-2xl text-white">{hunt.name}</CardTitle>
-              <CardDescription className="text-base text-white/80">
-                🎯 Welcome to the scavenger hunt! Register to start your adventure.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-white">👤 Full Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
-                  required
-                  className="border-white/20 focus:border-white/40 bg-white/10 text-white placeholder:text-white/50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-white">📧 Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  className="border-white/20 focus:border-white/40 bg-white/10 text-white placeholder:text-white/50"
-                />
-              </div>
-              <Button
-                onClick={handleRegistration}
-                disabled={!name.trim() || !email.trim() || registering}
-                className="w-full bg-white text-aum-orange hover:bg-white/90 font-semibold py-6 text-lg shadow-lg"
-              >
-                {registering ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Registering...
-                  </>
-                ) : (
-                  <>
-                    🚀 Start Hunt
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange" />
+            <CardTitle>{hunt.name}</CardTitle>
+            <CardDescription>
+              Welcome to the scavenger hunt! Register to start your adventure.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <Button
+              onClick={handleRegistration}
+              disabled={!name.trim() || !email.trim() || registering}
+              className="w-full"
+            >
+              {registering ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                'Start Hunt'
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -483,40 +350,27 @@ const ScavengerHuntPage: React.FC = () => {
   // Completion screen
   if (participant && participant.completed_at) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-aum-orange via-aum-orange/80 to-aum-purple relative">
-        {/* Logo at top */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <img 
-            src="/lovable-uploads/41001a42-1b3e-42c9-af15-6da3d23e858f.png" 
-            alt="Aumovio Logo" 
-            className="h-16 w-auto object-contain"
-          />
-        </div>
-        
-        <div className="min-h-screen flex items-center justify-center p-4 pt-32">
-          <Card className="w-full max-w-md text-center border-white/20 shadow-xl bg-white/10 backdrop-blur">
-            <CardHeader className="pb-8">
-              <Trophy className="w-20 h-20 mx-auto mb-4 text-white animate-bounce" />
-              <CardTitle className="text-3xl text-white mb-2">🎉 Congratulations!</CardTitle>
-              <CardDescription className="text-lg text-white/80">
-                You've successfully completed the scavenger hunt!
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-white/10 rounded-lg border border-white/20">
-                  <p className="text-xl font-bold text-white">{participant.name}</p>
-                </div>
-                <Badge className="text-xl px-6 py-3 bg-white text-aum-orange">
-                  🏆 {locations.length}/{locations.length} locations completed
-                </Badge>
-                <p className="text-sm text-white/70 mt-6 bg-white/10 p-3 rounded-lg">
-                  📅 Completed on {new Date(participant.completed_at).toLocaleDateString()}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <Trophy className="w-16 h-16 mx-auto mb-4 text-aum-orange" />
+            <CardTitle className="text-2xl">Congratulations!</CardTitle>
+            <CardDescription>
+              You've successfully completed the scavenger hunt!
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <p className="text-lg font-medium">{participant.name}</p>
+              <Badge className="text-lg px-4 py-2">
+                {locations.length}/{locations.length} locations completed
+              </Badge>
+              <p className="text-sm text-muted-foreground mt-4">
+                Completed on {new Date(participant.completed_at).toLocaleDateString()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -526,88 +380,73 @@ const ScavengerHuntPage: React.FC = () => {
     const isCompleted = participant.progress.includes(currentLocation.id);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-aum-orange via-aum-orange/80 to-aum-purple relative">
-        {/* Logo at top */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <img 
-            src="/lovable-uploads/41001a42-1b3e-42c9-af15-6da3d23e858f.png" 
-            alt="Aumovio Logo" 
-            className="h-16 w-auto object-contain"
-          />
-        </div>
-        
-        <div className="min-h-screen p-4 pt-32">
-          <div className="max-w-2xl mx-auto">
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3 justify-center">
-                <MapPin className="w-6 h-6 text-white" />
-                <h1 className="text-2xl font-bold text-white">{currentLocation.name}</h1>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-sm text-white/70">Progress:</span>
-                <Badge variant="outline" className="border-white/30 text-white bg-white/10">
-                  📍 {participant.progress.length}/{locations.length} completed
-                </Badge>
-              </div>
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="w-5 h-5 text-aum-orange" />
+              <h1 className="text-xl font-bold">{currentLocation.name}</h1>
             </div>
-
-            <Card className="border-white/20 shadow-xl bg-white/10 backdrop-blur">
-              <CardHeader className="bg-white/5 border-b border-white/10">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  {isCompleted ? (
-                    <CheckCircle className="w-6 h-6 text-green-300" />
-                  ) : (
-                    <Trophy className="w-6 h-6 text-white animate-pulse" />
-                  )}
-                  <span className="text-white">🧠 Trivia Question</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-                  <p className="text-lg font-medium text-white">{currentLocation.question}</p>
-                </div>
-                
-                {isCompleted ? (
-                  <div className="text-center p-6 bg-green-500/20 rounded-lg border border-green-300/30">
-                    <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-300" />
-                    <p className="font-semibold text-green-200 text-lg">
-                      ✅ You've already completed this location!
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer} className="space-y-3">
-                      {currentLocation.options.map((option, index) => (
-                        <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border border-white/10 hover:bg-white/5 transition-colors">
-                          <RadioGroupItem value={option} id={`option-${index}`} className="border-white/40 text-white" />
-                          <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer font-medium text-white">
-                            {option}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                    
-                    <Button
-                      onClick={handleAnswerSubmission}
-                      disabled={!selectedAnswer || answering}
-                      className="w-full bg-white text-aum-orange hover:bg-white/90 font-semibold py-6 text-lg shadow-lg"
-                    >
-                      {answering ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          🎯 Submit Answer
-                        </>
-                      )}
-                    </Button>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Progress:</span>
+              <Badge variant="outline">
+                {participant.progress.length}/{locations.length} completed
+              </Badge>
+            </div>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {isCompleted ? (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                ) : (
+                  <Trophy className="w-5 h-5 text-aum-orange" />
+                )}
+                Trivia Question
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-lg">{currentLocation.question}</p>
+              
+              {isCompleted ? (
+                <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                  <p className="font-medium text-green-700 dark:text-green-300">
+                    You've already completed this location!
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer}>
+                    {currentLocation.options.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option} id={`option-${index}`} />
+                        <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+                          {option}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                  
+                  <Button
+                    onClick={handleAnswerSubmission}
+                    disabled={!selectedAnswer || answering}
+                    className="w-full"
+                  >
+                    {answering ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Answer'
+                    )}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -615,77 +454,57 @@ const ScavengerHuntPage: React.FC = () => {
 
   // Progress overview for registered participants
   return (
-    <div className="min-h-screen bg-gradient-to-br from-aum-orange via-aum-orange/80 to-aum-purple relative">
-      {/* Logo at top */}
-      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-        <img 
-          src="/lovable-uploads/41001a42-1b3e-42c9-af15-6da3d23e858f.png" 
-          alt="Aumovio Logo" 
-          className="h-16 w-auto object-contain"
-        />
-      </div>
-      
-      <div className="min-h-screen p-4 pt-32">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <Trophy className="w-12 h-12 mx-auto mb-4 text-white animate-pulse" />
-            <h1 className="text-3xl font-bold text-white">{hunt.name}</h1>
-            <p className="text-lg text-white/80">👋 Welcome back, {participant?.name}!</p>
-          </div>
-
-          <Card className="border-white/20 shadow-xl bg-white/10 backdrop-blur">
-            <CardHeader className="bg-white/5 border-b border-white/10">
-              <CardTitle className="text-xl text-white flex items-center gap-2">
-                📊 Your Progress
-              </CardTitle>
-              <CardDescription className="text-base text-white/80">
-                Complete all locations to finish the scavenger hunt
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {locations.map((location) => {
-                  const completed = participant?.progress.includes(location.id);
-                  return (
-                    <div
-                      key={location.id}
-                      className={`flex items-center justify-between p-4 border rounded-lg transition-all ${
-                        completed 
-                          ? 'bg-green-500/20 border-green-300/30 shadow-sm' 
-                          : 'border-white/10 hover:bg-white/5'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {completed ? (
-                          <CheckCircle className="w-6 h-6 text-green-300" />
-                        ) : (
-                          <MapPin className="w-6 h-6 text-white" />
-                        )}
-                        <span className={`font-medium ${completed ? 'text-green-200' : 'text-white'}`}>
-                          {location.name}
-                        </span>
-                      </div>
-                      <Badge 
-                        variant={completed ? "default" : "secondary"}
-                        className={completed ? "bg-green-500 hover:bg-green-600 text-white" : "border-white/20 bg-white/10 text-white"}
-                      >
-                        {completed ? "✅ Completed" : "⏳ Pending"}
-                      </Badge>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <div className="mt-8 text-center">
-                <div className="p-4 bg-white/10 rounded-lg border border-white/20">
-                  <Badge className="text-xl px-6 py-3 bg-white text-aum-orange">
-                    🎯 {participant?.progress.length || 0}/{locations.length} locations completed
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange" />
+          <h1 className="text-2xl font-bold">{hunt.name}</h1>
+          <p className="text-muted-foreground">Welcome back, {participant?.name}!</p>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Progress</CardTitle>
+            <CardDescription>
+              Complete all locations to finish the scavenger hunt
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {locations.map((location) => {
+                const completed = participant?.progress.includes(location.id);
+                return (
+                  <div
+                    key={location.id}
+                    className={`flex items-center justify-between p-3 border rounded ${
+                      completed ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {completed ? (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <MapPin className="w-5 h-5 text-muted-foreground" />
+                      )}
+                      <span className={completed ? 'text-green-700 dark:text-green-300' : ''}>
+                        {location.name}
+                      </span>
+                    </div>
+                    <Badge variant={completed ? "default" : "secondary"}>
+                      {completed ? "Completed" : "Pending"}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="mt-6 text-center">
+              <Badge className="text-lg px-4 py-2">
+                {participant?.progress.length || 0}/{locations.length} locations completed
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
