@@ -55,15 +55,7 @@ const ScavengerHuntPage: React.FC = () => {
 
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
-        .select(`
-          *,
-          events (
-            id,
-            name,
-            is_active,
-            scavenger_hunt_enabled
-          )
-        `)
+        .select('*')
         .eq('signup_qr_token', signupToken)
         .eq('is_active', true)
         .maybeSingle();
@@ -81,14 +73,34 @@ const ScavengerHuntPage: React.FC = () => {
         throw new Error('No scavenger hunt found for this token');
       }
 
+      // Fetch the associated event data separately
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('id, name, is_active, scavenger_hunt_enabled')
+        .eq('id', huntData.event_id)
+        .maybeSingle();
+
+      console.log('fetchHuntBySignupToken: Event query result:', eventData);
+      console.log('fetchHuntBySignupToken: Event query error:', eventError);
+
+      if (eventError) {
+        console.error('fetchHuntBySignupToken: Event database error:', eventError);
+        throw eventError;
+      }
+
+      if (!eventData) {
+        console.log('fetchHuntBySignupToken: Event not found for hunt:', huntData.event_id);
+        throw new Error('Event not found for this hunt');
+      }
+
       // Verify the associated event is active and has scavenger hunt enabled
-      if (!huntData.events || !huntData.events.is_active) {
-        console.log('fetchHuntBySignupToken: Event is not active:', huntData.events);
+      if (!eventData.is_active) {
+        console.log('fetchHuntBySignupToken: Event is not active:', eventData);
         throw new Error('Hunt belongs to inactive event');
       }
 
-      if (!huntData.events.scavenger_hunt_enabled) {
-        console.log('fetchHuntBySignupToken: Scavenger hunt not enabled for event:', huntData.events);
+      if (!eventData.scavenger_hunt_enabled) {
+        console.log('fetchHuntBySignupToken: Scavenger hunt not enabled for event:', eventData);
         throw new Error('Scavenger hunt not enabled for this event');
       }
 
@@ -111,33 +123,41 @@ const ScavengerHuntPage: React.FC = () => {
     try {
       const { data: locationData, error: locationError } = await supabase
         .from('scavenger_locations')
-        .select(`
-          *,
-          scavenger_hunts (
-            *,
-            events (
-              id,
-              name,
-              is_active,
-              scavenger_hunt_enabled
-            )
-          )
-        `)
+        .select('*')
         .eq('qr_token', locToken)
         .single();
 
       if (locationError) throw locationError;
 
-      // Verify the hunt is active and belongs to an active event
-      if (!locationData.scavenger_hunts.is_active) {
+      // Fetch the scavenger hunt data separately
+      const { data: huntData, error: huntError } = await supabase
+        .from('scavenger_hunts')
+        .select('*')
+        .eq('id', locationData.scavenger_hunt_id)
+        .single();
+
+      if (huntError) throw huntError;
+
+      // Verify the hunt is active
+      if (!huntData.is_active) {
         throw new Error('Scavenger hunt is not active');
       }
 
-      if (!locationData.scavenger_hunts.events || !locationData.scavenger_hunts.events.is_active) {
+      // Fetch the event data separately
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('id, name, is_active, scavenger_hunt_enabled')
+        .eq('id', huntData.event_id)
+        .single();
+
+      if (eventError) throw eventError;
+
+      // Verify the event is active and has scavenger hunt enabled
+      if (!eventData.is_active) {
         throw new Error('Hunt belongs to inactive event');
       }
 
-      if (!locationData.scavenger_hunts.events.scavenger_hunt_enabled) {
+      if (!eventData.scavenger_hunt_enabled) {
         throw new Error('Scavenger hunt not enabled for this event');
       }
 
@@ -147,16 +167,16 @@ const ScavengerHuntPage: React.FC = () => {
         options: Array.isArray(locationData.options) ? locationData.options.filter(opt => typeof opt === 'string') : []
       };
       setCurrentLocation(convertedLocation);
-      setHunt(locationData.scavenger_hunts);
-      await fetchLocations(locationData.scavenger_hunts.id);
+      setHunt(huntData);
+      await fetchLocations(huntData.id);
       
       // Check for existing participant
       const storedEmail = localStorage.getItem('scavenger_email');
       if (storedEmail) {
-        await fetchParticipant(locationData.scavenger_hunts.id, storedEmail);
+        await fetchParticipant(huntData.id, storedEmail);
       } else {
         // Redirect to signup if no stored email
-        navigate(`/hunt/${locationData.scavenger_hunts.signup_qr_token}`);
+        navigate(`/hunt/${huntData.signup_qr_token}`);
         return;
       }
     } catch (error) {
