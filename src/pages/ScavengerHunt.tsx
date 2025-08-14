@@ -43,39 +43,63 @@ const ScavengerHuntPage: React.FC = () => {
 
   const fetchHuntBySignupToken = async (signupToken: string) => {
     try {
+      console.log('fetchHuntBySignupToken: Starting with token:', signupToken);
+      
+      // First, let's see what scavenger hunts exist
+      const { data: allHunts, error: allHuntsError } = await supabase
+        .from('scavenger_hunts')
+        .select('*');
+      
+      console.log('fetchHuntBySignupToken: All scavenger hunts:', allHunts);
+      console.log('fetchHuntBySignupToken: All hunts error:', allHuntsError);
+
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
-        .select('*')
+        .select(`
+          *,
+          events (
+            id,
+            name,
+            is_active,
+            scavenger_hunt_enabled
+          )
+        `)
         .eq('signup_qr_token', signupToken)
-        .eq('is_active', true)
-        .single();
-
-      if (huntError) throw huntError;
-
-      // Verify the hunt belongs to an active event
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('is_active')
-        .eq('id', huntData.event_id)
         .eq('is_active', true)
         .maybeSingle();
 
-      if (eventError) {
-        console.error('Event verification error:', eventError);
-        throw eventError;
+      console.log('fetchHuntBySignupToken: Hunt query result:', huntData);
+      console.log('fetchHuntBySignupToken: Hunt query error:', huntError);
+
+      if (huntError) {
+        console.error('fetchHuntBySignupToken: Database error:', huntError);
+        throw huntError;
       }
-      
-      if (!eventData) {
+
+      if (!huntData) {
+        console.log('fetchHuntBySignupToken: No hunt found for token:', signupToken);
+        throw new Error('No scavenger hunt found for this token');
+      }
+
+      // Verify the associated event is active and has scavenger hunt enabled
+      if (!huntData.events || !huntData.events.is_active) {
+        console.log('fetchHuntBySignupToken: Event is not active:', huntData.events);
         throw new Error('Hunt belongs to inactive event');
       }
 
+      if (!huntData.events.scavenger_hunt_enabled) {
+        console.log('fetchHuntBySignupToken: Scavenger hunt not enabled for event:', huntData.events);
+        throw new Error('Scavenger hunt not enabled for this event');
+      }
+
+      console.log('fetchHuntBySignupToken: Valid hunt found:', huntData);
       setHunt(huntData);
       await fetchLocations(huntData.id);
     } catch (error) {
-      console.error('Error fetching hunt:', error);
+      console.error('fetchHuntBySignupToken: Error:', error);
       toast({
         title: "Error",
-        description: "Invalid or expired signup link, or hunt not associated with active event",
+        description: error instanceof Error ? error.message : "Invalid or expired signup link",
         variant: "destructive",
       });
     } finally {
@@ -89,7 +113,15 @@ const ScavengerHuntPage: React.FC = () => {
         .from('scavenger_locations')
         .select(`
           *,
-          scavenger_hunts (*)
+          scavenger_hunts (
+            *,
+            events (
+              id,
+              name,
+              is_active,
+              scavenger_hunt_enabled
+            )
+          )
         `)
         .eq('qr_token', locToken)
         .single();
@@ -101,15 +133,12 @@ const ScavengerHuntPage: React.FC = () => {
         throw new Error('Scavenger hunt is not active');
       }
 
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('is_active')
-        .eq('id', locationData.scavenger_hunts.event_id)
-        .eq('is_active', true)
-        .single();
-
-      if (eventError || !eventData) {
+      if (!locationData.scavenger_hunts.events || !locationData.scavenger_hunts.events.is_active) {
         throw new Error('Hunt belongs to inactive event');
+      }
+
+      if (!locationData.scavenger_hunts.events.scavenger_hunt_enabled) {
+        throw new Error('Scavenger hunt not enabled for this event');
       }
 
       // Convert database types to frontend types
