@@ -11,8 +11,10 @@ import { Plus, Trash2, QrCode, Download, Users, Trophy } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
-import { ScavengerHunt, ScavengerLocation, ScavengerParticipant, ScavengerHuntFormData, ScavengerLocationDB, ScavengerParticipantDB } from "@/types/scavenger";
+import { ScavengerHunt, ScavengerLocation, ScavengerParticipant, ScavengerHuntFormData, ScavengerLocationDB, ScavengerParticipantDB, QRCodeData } from "@/types/scavenger";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import QRCodeLib from "qrcode";
+import JSZip from "jszip";
 
 interface ScavengerHuntManagerProps {
   event: Event;
@@ -220,24 +222,65 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
     }
   };
 
-  const downloadQRCodes = () => {
-    // This would generate a PDF or ZIP file with all QR codes
-    // For now, we'll just show the URLs
-    const qrData = Object.entries(qrCodes).map(([key, url]) => {
-      const isSignup = key === 'signup';
-      const location = isSignup ? null : locations.find(l => l.id === key);
-      return {
-        type: isSignup ? 'Signup' : 'Location',
-        name: isSignup ? 'Event Signup' : location?.name || 'Unknown',
-        url: url
-      };
-    });
+  const downloadQRCodes = async () => {
+    if (!scavengerHunt || !locations.length) {
+      toast({
+        title: "Error",
+        description: "No scavenger hunt or locations found",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    console.log('QR Codes for download:', qrData);
-    toast({
-      title: "QR Codes",
-      description: "QR code data logged to console. In production, this would generate a downloadable file.",
-    });
+    try {
+      const zip = new JSZip();
+      
+      // Generate signup QR code
+      const signupData: QRCodeData = {
+        type: 'signup',
+        token: scavengerHunt.signup_qr_token,
+        huntId: scavengerHunt.id
+      };
+      const signupUrl = `${window.location.origin}/hunt/${scavengerHunt.signup_qr_token}`;
+      const signupQRCode = await QRCodeLib.toDataURL(signupUrl, { width: 300 });
+      zip.file("signup-qr-code.png", signupQRCode.split(',')[1], { base64: true });
+
+      // Generate location QR codes
+      for (const location of locations) {
+        const locationData: QRCodeData = {
+          type: 'location',
+          token: location.qr_token,
+          huntId: scavengerHunt.id,
+          locationId: location.id
+        };
+        const locationUrl = `${window.location.origin}/hunt/location/${location.qr_token}`;
+        const locationQRCode = await QRCodeLib.toDataURL(locationUrl, { width: 300 });
+        zip.file(`location-${location.location_order}-${location.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`, locationQRCode.split(',')[1], { base64: true });
+      }
+
+      // Generate and download ZIP file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${scavengerHunt.name.replace(/[^a-zA-Z0-9]/g, '_')}-qr-codes.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "QR codes downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error downloading QR codes:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download QR codes",
+        variant: "destructive",
+      });
+    }
   };
 
   const exportResults = () => {
