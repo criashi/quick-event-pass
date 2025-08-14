@@ -24,7 +24,8 @@ const EventForm = ({ onClose, onEventCreated }: EventFormProps) => {
     end_time: '',
     location: '',
     timezone: 'UTC',
-    is_active: false
+    is_active: false,
+    scavenger_hunt_enabled: false
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

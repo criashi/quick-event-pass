@@ -9,6 +9,7 @@ export interface Event {
   location?: string;
   timezone: string;
   is_active: boolean;
+  scavenger_hunt_enabled?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -105,6 +105,7 @@ export type Database = {
           is_active: boolean | null
           location: string | null
           name: string
+          scavenger_hunt_enabled: boolean | null
           start_time: string | null
           timezone: string | null
           updated_at: string
@@ -118,6 +119,7 @@ export type Database = {
           is_active?: boolean | null
           location?: string | null
           name: string
+          scavenger_hunt_enabled?: boolean | null
           start_time?: string | null
           timezone?: string | null
           updated_at?: string
@@ -131,6 +133,7 @@ export type Database = {
           is_active?: boolean | null
           location?: string | null
           name?: string
+          scavenger_hunt_enabled?: boolean | null
           start_time?: string | null
           timezone?: string | null
           updated_at?: string
@@ -208,6 +211,124 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      scavenger_hunts: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          is_active: boolean | null
+          name: string
+          signup_qr_token: string
+          total_locations: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          signup_qr_token?: string
+          total_locations?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          signup_qr_token?: string
+          total_locations?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scavenger_locations: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          id: string
+          location_order: number
+          name: string
+          options: Json
+          qr_token: string
+          question: string
+          scavenger_hunt_id: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          id?: string
+          location_order: number
+          name: string
+          options: Json
+          qr_token?: string
+          question: string
+          scavenger_hunt_id: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          id?: string
+          location_order?: number
+          name?: string
+          options?: Json
+          qr_token?: string
+          question?: string
+          scavenger_hunt_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scavenger_locations_scavenger_hunt_id_fkey"
+            columns: ["scavenger_hunt_id"]
+            isOneToOne: false
+            referencedRelation: "scavenger_hunts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scavenger_participants: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          progress: Json
+          scavenger_hunt_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          progress?: Json
+          scavenger_hunt_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          progress?: Json
+          scavenger_hunt_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scavenger_participants_scavenger_hunt_id_fkey"
+            columns: ["scavenger_hunt_id"]
+            isOneToOne: false
+            referencedRelation: "scavenger_hunts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_audit_log: {
         Row: {
