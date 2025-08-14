@@ -269,10 +269,15 @@ const ScavengerHuntPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p>Loading scavenger hunt...</p>
+          <img 
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+            alt="Aumovio Logo" 
+            className="w-32 h-auto mx-auto mb-6 animate-fade-in"
+          />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading scavenger hunt...</p>
         </div>
       </div>
     );
@@ -280,15 +285,22 @@ const ScavengerHuntPage: React.FC = () => {
 
   if (!hunt) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center text-destructive">Hunt Not Found</CardTitle>
-            <CardDescription className="text-center">
-              The scavenger hunt you're looking for doesn't exist or has expired.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
+        <div className="w-full max-w-md">
+          <img 
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+            alt="Aumovio Logo" 
+            className="w-32 h-auto mx-auto mb-8 animate-fade-in"
+          />
+          <Card className="backdrop-blur-sm bg-background/80 border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-center text-destructive">Hunt Not Found</CardTitle>
+              <CardDescription className="text-center">
+                The scavenger hunt you're looking for doesn't exist or has expired.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -296,15 +308,21 @@ const ScavengerHuntPage: React.FC = () => {
   // Registration/Signup flow
   if (token && !participant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange" />
-            <CardTitle>{hunt.name}</CardTitle>
-            <CardDescription>
-              Welcome to the scavenger hunt! Register to start your adventure.
-            </CardDescription>
-          </CardHeader>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
+        <div className="w-full max-w-md">
+          <img 
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+            alt="Aumovio Logo" 
+            className="w-32 h-auto mx-auto mb-8 animate-fade-in"
+          />
+          <Card className="backdrop-blur-sm bg-background/80 border-primary/20 animate-scale-in">
+            <CardHeader className="text-center">
+              <Trophy className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <CardTitle>{hunt.name}</CardTitle>
+              <CardDescription>
+                Welcome to the scavenger hunt! Register to start your adventure.
+              </CardDescription>
+            </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="name">Full Name</Label>
@@ -343,6 +361,7 @@ const ScavengerHuntPage: React.FC = () => {
             </Button>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
@@ -350,15 +369,21 @@ const ScavengerHuntPage: React.FC = () => {
   // Completion screen
   if (participant && participant.completed_at) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-aum-orange" />
-            <CardTitle className="text-2xl">Congratulations!</CardTitle>
-            <CardDescription>
-              You've successfully completed the scavenger hunt!
-            </CardDescription>
-          </CardHeader>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
+        <div className="w-full max-w-md text-center">
+          <img 
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+            alt="Aumovio Logo" 
+            className="w-32 h-auto mx-auto mb-8 animate-fade-in"
+          />
+          <Card className="backdrop-blur-sm bg-background/80 border-primary/20 animate-scale-in">
+            <CardHeader>
+              <Trophy className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
+              <CardTitle className="text-2xl">Congratulations!</CardTitle>
+              <CardDescription>
+                You've successfully completed the scavenger hunt!
+              </CardDescription>
+            </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-lg font-medium">{participant.name}</p>
@@ -371,6 +396,7 @@ const ScavengerHuntPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
@@ -380,11 +406,16 @@ const ScavengerHuntPage: React.FC = () => {
     const isCompleted = participant.progress.includes(currentLocation.id);
     
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
         <div className="max-w-2xl mx-auto">
+          <img 
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+            alt="Aumovio Logo" 
+            className="w-24 h-auto mx-auto mb-6 animate-fade-in"
+          />
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-aum-orange" />
+              <MapPin className="w-5 h-5 text-primary" />
               <h1 className="text-xl font-bold">{currentLocation.name}</h1>
             </div>
             <div className="flex items-center gap-2">
@@ -395,13 +426,13 @@ const ScavengerHuntPage: React.FC = () => {
             </div>
           </div>
 
-          <Card>
+          <Card className="backdrop-blur-sm bg-background/80 border-primary/20 animate-scale-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 {isCompleted ? (
                   <CheckCircle className="w-5 h-5 text-green-500" />
                 ) : (
-                  <Trophy className="w-5 h-5 text-aum-orange" />
+                  <Trophy className="w-5 h-5 text-primary" />
                 )}
                 Trivia Question
               </CardTitle>
@@ -454,15 +485,20 @@ const ScavengerHuntPage: React.FC = () => {
 
   // Progress overview for registered participants
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange" />
+          <img 
+            src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+            alt="Aumovio Logo" 
+            className="w-32 h-auto mx-auto mb-6 animate-fade-in"
+          />
+          <Trophy className="w-12 h-12 mx-auto mb-4 text-primary" />
           <h1 className="text-2xl font-bold">{hunt.name}</h1>
           <p className="text-muted-foreground">Welcome back, {participant?.name}!</p>
         </div>
 
-        <Card>
+        <Card className="backdrop-blur-sm bg-background/80 border-primary/20 animate-scale-in">
           <CardHeader>
             <CardTitle>Your Progress</CardTitle>
             <CardDescription>
