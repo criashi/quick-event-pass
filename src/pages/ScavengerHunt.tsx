@@ -58,9 +58,14 @@ const ScavengerHuntPage: React.FC = () => {
         .select('is_active')
         .eq('id', huntData.event_id)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (eventError || !eventData) {
+      if (eventError) {
+        console.error('Event verification error:', eventError);
+        throw eventError;
+      }
+      
+      if (!eventData) {
         throw new Error('Hunt belongs to inactive event');
       }
 
