@@ -31,11 +31,13 @@ export const useEvents = () => {
       console.log('fetchEvents: Fetched events:', data);
       setEvents(data || []);
       
-      // Find and set the active event
-      const activeEvent = data?.find(event => event.is_active);
+      // Find and set the active event - ensure only one active event exists
+      const activeEvents = data?.filter(event => event.is_active) || [];
+      const activeEvent = activeEvents.length > 0 ? activeEvents[0] : null;
       console.log('fetchEvents: Found active event:', activeEvent);
+      console.log('fetchEvents: Active event scavenger_hunt_enabled:', activeEvent?.scavenger_hunt_enabled);
       
-      setCurrentEvent(activeEvent || null);
+      setCurrentEvent(activeEvent);
       console.log('fetchEvents: Set currentEvent to:', activeEvent?.name || 'null');
     } catch (error) {
       console.error('fetchEvents: Unexpected error:', error);
