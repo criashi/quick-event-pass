@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ScavengerHunt, ScavengerLocation, ScavengerParticipant, ScavengerLocationDB, ScavengerParticipantDB } from "@/types/scavenger";
 
 const ScavengerHuntPage: React.FC = () => {
+  console.log('=== ScavengerHunt component rendered ===');
   const { token, locationToken } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
