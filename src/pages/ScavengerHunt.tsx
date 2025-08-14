@@ -43,26 +43,26 @@ const ScavengerHuntPage: React.FC = () => {
 
   const fetchHuntBySignupToken = async (signupToken: string) => {
     try {
-      // First get the active event to ensure we're working with the correct event context
-      const { data: activeEvents, error: eventError } = await supabase
-        .from('events')
-        .select('id')
-        .eq('is_active', true);
-
-      if (eventError) throw eventError;
-
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
-        .select(`
-          *,
-          events!inner (id, is_active)
-        `)
+        .select('*')
         .eq('signup_qr_token', signupToken)
         .eq('is_active', true)
-        .eq('events.is_active', true)
         .single();
 
       if (huntError) throw huntError;
+
+      // Verify the hunt belongs to an active event
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('is_active')
+        .eq('id', huntData.event_id)
+        .eq('is_active', true)
+        .single();
+
+      if (eventError || !eventData) {
+        throw new Error('Hunt belongs to inactive event');
+      }
 
       setHunt(huntData);
       await fetchLocations(huntData.id);
@@ -84,17 +84,28 @@ const ScavengerHuntPage: React.FC = () => {
         .from('scavenger_locations')
         .select(`
           *,
-          scavenger_hunts!inner (
-            *,
-            events!inner (id, is_active)
-          )
+          scavenger_hunts (*)
         `)
         .eq('qr_token', locToken)
-        .eq('scavenger_hunts.is_active', true)
-        .eq('scavenger_hunts.events.is_active', true)
         .single();
 
       if (locationError) throw locationError;
+
+      // Verify the hunt is active and belongs to an active event
+      if (!locationData.scavenger_hunts.is_active) {
+        throw new Error('Scavenger hunt is not active');
+      }
+
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('is_active')
+        .eq('id', locationData.scavenger_hunts.event_id)
+        .eq('is_active', true)
+        .single();
+
+      if (eventError || !eventData) {
+        throw new Error('Hunt belongs to inactive event');
+      }
 
       // Convert database types to frontend types
       const convertedLocation = {
