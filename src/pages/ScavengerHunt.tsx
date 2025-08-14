@@ -269,10 +269,17 @@ const ScavengerHuntPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p>Loading scavenger hunt...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-aum-orange/5 to-aum-purple/5">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-brand-gradient flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+              alt="Aumovio Logo" 
+              className="w-10 h-10 object-contain"
+            />
+          </div>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-aum-orange" />
+          <p className="text-lg font-medium brand-text-gradient">Loading scavenger hunt...</p>
         </div>
       </div>
     );
@@ -280,10 +287,17 @@ const ScavengerHuntPage: React.FC = () => {
 
   if (!hunt) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center text-destructive">Hunt Not Found</CardTitle>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-aum-orange/5 to-aum-purple/5 p-4">
+        <Card className="w-full max-w-md border-aum-orange/20 shadow-xl">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-brand-gradient flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+                alt="Aumovio Logo" 
+                className="w-10 h-10 object-contain"
+              />
+            </div>
+            <CardTitle className="text-center text-destructive text-xl">🔍 Hunt Not Found</CardTitle>
             <CardDescription className="text-center">
               The scavenger hunt you're looking for doesn't exist or has expired.
             </CardDescription>
@@ -296,28 +310,36 @@ const ScavengerHuntPage: React.FC = () => {
   // Registration/Signup flow
   if (token && !participant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-aum-orange/5 to-aum-purple/5 p-4">
+        <Card className="w-full max-w-md border-aum-orange/20 shadow-xl bg-card/80 backdrop-blur">
           <CardHeader className="text-center">
-            <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange" />
-            <CardTitle>{hunt.name}</CardTitle>
-            <CardDescription>
-              Welcome to the scavenger hunt! Register to start your adventure.
+            <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-brand-gradient flex items-center justify-center shadow-lg">
+              <img 
+                src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+                alt="Aumovio Logo" 
+                className="w-10 h-10 object-contain"
+              />
+            </div>
+            <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange animate-pulse" />
+            <CardTitle className="text-2xl brand-text-gradient">{hunt.name}</CardTitle>
+            <CardDescription className="text-base">
+              🎯 Welcome to the scavenger hunt! Register to start your adventure.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="name">Full Name</Label>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">👤 Full Name</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
                 required
+                className="border-aum-orange/20 focus:border-aum-orange/40"
               />
             </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">📧 Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -325,20 +347,24 @@ const ScavengerHuntPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
+                className="border-aum-orange/20 focus:border-aum-orange/40"
               />
             </div>
             <Button
               onClick={handleRegistration}
               disabled={!name.trim() || !email.trim() || registering}
-              className="w-full"
+              className="w-full bg-brand-gradient hover:opacity-90 text-white font-semibold py-6 text-lg shadow-lg"
+              variant="brand"
             >
               {registering ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   Registering...
                 </>
               ) : (
-                'Start Hunt'
+                <>
+                  🚀 Start Hunt
+                </>
               )}
             </Button>
           </CardContent>
@@ -350,23 +376,32 @@ const ScavengerHuntPage: React.FC = () => {
   // Completion screen
   if (participant && participant.completed_at) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-aum-orange" />
-            <CardTitle className="text-2xl">Congratulations!</CardTitle>
-            <CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-aum-orange/5 to-aum-purple/5 p-4">
+        <Card className="w-full max-w-md text-center border-aum-orange/20 shadow-xl bg-card/80 backdrop-blur">
+          <CardHeader className="pb-8">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-brand-gradient flex items-center justify-center shadow-lg animate-pulse">
+              <img 
+                src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+                alt="Aumovio Logo" 
+                className="w-12 h-12 object-contain"
+              />
+            </div>
+            <Trophy className="w-20 h-20 mx-auto mb-4 text-aum-orange animate-bounce" />
+            <CardTitle className="text-3xl brand-text-gradient mb-2">🎉 Congratulations!</CardTitle>
+            <CardDescription className="text-lg">
               You've successfully completed the scavenger hunt!
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <p className="text-lg font-medium">{participant.name}</p>
-              <Badge className="text-lg px-4 py-2">
-                {locations.length}/{locations.length} locations completed
+            <div className="space-y-4">
+              <div className="p-4 bg-brand-gradient/10 rounded-lg border border-aum-orange/20">
+                <p className="text-xl font-bold text-aum-orange">{participant.name}</p>
+              </div>
+              <Badge className="text-xl px-6 py-3 bg-brand-gradient text-white">
+                🏆 {locations.length}/{locations.length} locations completed
               </Badge>
-              <p className="text-sm text-muted-foreground mt-4">
-                Completed on {new Date(participant.completed_at).toLocaleDateString()}
+              <p className="text-sm text-muted-foreground mt-6 bg-muted/50 p-3 rounded-lg">
+                📅 Completed on {new Date(participant.completed_at).toLocaleDateString()}
               </p>
             </div>
           </CardContent>
@@ -380,49 +415,62 @@ const ScavengerHuntPage: React.FC = () => {
     const isCompleted = participant.progress.includes(currentLocation.id);
     
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-aum-orange/5 to-aum-purple/5 p-4">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-aum-orange" />
-              <h1 className="text-xl font-bold">{currentLocation.name}</h1>
+          {/* Header with Aumovio branding */}
+          <div className="mb-6 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-brand-gradient flex items-center justify-center shadow-lg">
+              <img 
+                src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+                alt="Aumovio Logo" 
+                className="w-10 h-10 object-contain"
+              />
             </div>
-            <div className="flex items-center gap-2">
+          </div>
+          
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-3 justify-center">
+              <MapPin className="w-6 h-6 text-aum-orange" />
+              <h1 className="text-2xl font-bold brand-text-gradient">{currentLocation.name}</h1>
+            </div>
+            <div className="flex items-center justify-center gap-2">
               <span className="text-sm text-muted-foreground">Progress:</span>
-              <Badge variant="outline">
-                {participant.progress.length}/{locations.length} completed
+              <Badge variant="outline" className="border-aum-orange/30 text-aum-orange">
+                📍 {participant.progress.length}/{locations.length} completed
               </Badge>
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="border-aum-orange/20 shadow-xl bg-card/80 backdrop-blur">
+            <CardHeader className="bg-brand-gradient/5 border-b border-aum-orange/10">
+              <CardTitle className="flex items-center gap-3 text-xl">
                 {isCompleted ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <CheckCircle className="w-6 h-6 text-green-500" />
                 ) : (
-                  <Trophy className="w-5 h-5 text-aum-orange" />
+                  <Trophy className="w-6 h-6 text-aum-orange animate-pulse" />
                 )}
-                Trivia Question
+                <span className="brand-text-gradient">🧠 Trivia Question</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-lg">{currentLocation.question}</p>
+            <CardContent className="space-y-6 pt-6">
+              <div className="p-4 bg-muted/30 rounded-lg border border-aum-orange/10">
+                <p className="text-lg font-medium">{currentLocation.question}</p>
+              </div>
               
               {isCompleted ? (
-                <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                  <p className="font-medium text-green-700 dark:text-green-300">
-                    You've already completed this location!
+                <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500" />
+                  <p className="font-semibold text-green-700 dark:text-green-300 text-lg">
+                    ✅ You've already completed this location!
                   </p>
                 </div>
               ) : (
                 <>
-                  <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer}>
+                  <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer} className="space-y-3">
                     {currentLocation.options.map((option, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option} id={`option-${index}`} />
-                        <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+                      <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border border-aum-orange/10 hover:bg-brand-gradient/5 transition-colors">
+                        <RadioGroupItem value={option} id={`option-${index}`} className="border-aum-orange/40" />
+                        <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer font-medium">
                           {option}
                         </Label>
                       </div>
@@ -432,15 +480,18 @@ const ScavengerHuntPage: React.FC = () => {
                   <Button
                     onClick={handleAnswerSubmission}
                     disabled={!selectedAnswer || answering}
-                    className="w-full"
+                    className="w-full bg-brand-gradient hover:opacity-90 text-white font-semibold py-6 text-lg shadow-lg"
+                    variant="brand"
                   >
                     {answering ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Submitting...
                       </>
                     ) : (
-                      'Submit Answer'
+                      <>
+                        🎯 Submit Answer
+                      </>
                     )}
                   </Button>
                 </>
@@ -454,54 +505,70 @@ const ScavengerHuntPage: React.FC = () => {
 
   // Progress overview for registered participants
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-aum-orange/5 to-aum-purple/5 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange" />
-          <h1 className="text-2xl font-bold">{hunt.name}</h1>
-          <p className="text-muted-foreground">Welcome back, {participant?.name}!</p>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-brand-gradient flex items-center justify-center shadow-lg">
+            <img 
+              src="/lovable-uploads/Aumovio_Logo_print_orange_black_CMYK.png" 
+              alt="Aumovio Logo" 
+              className="w-10 h-10 object-contain"
+            />
+          </div>
+          <Trophy className="w-12 h-12 mx-auto mb-4 text-aum-orange animate-pulse" />
+          <h1 className="text-3xl font-bold brand-text-gradient">{hunt.name}</h1>
+          <p className="text-lg text-muted-foreground">👋 Welcome back, {participant?.name}!</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Progress</CardTitle>
-            <CardDescription>
+        <Card className="border-aum-orange/20 shadow-xl bg-card/80 backdrop-blur">
+          <CardHeader className="bg-brand-gradient/5 border-b border-aum-orange/10">
+            <CardTitle className="text-xl brand-text-gradient flex items-center gap-2">
+              📊 Your Progress
+            </CardTitle>
+            <CardDescription className="text-base">
               Complete all locations to finish the scavenger hunt
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
               {locations.map((location) => {
                 const completed = participant?.progress.includes(location.id);
                 return (
                   <div
                     key={location.id}
-                    className={`flex items-center justify-between p-3 border rounded ${
-                      completed ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : ''
+                    className={`flex items-center justify-between p-4 border rounded-lg transition-all ${
+                      completed 
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 shadow-sm' 
+                        : 'border-aum-orange/10 hover:bg-brand-gradient/5'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       {completed ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <CheckCircle className="w-6 h-6 text-green-500" />
                       ) : (
-                        <MapPin className="w-5 h-5 text-muted-foreground" />
+                        <MapPin className="w-6 h-6 text-aum-orange" />
                       )}
-                      <span className={completed ? 'text-green-700 dark:text-green-300' : ''}>
+                      <span className={`font-medium ${completed ? 'text-green-700 dark:text-green-300' : 'text-foreground'}`}>
                         {location.name}
                       </span>
                     </div>
-                    <Badge variant={completed ? "default" : "secondary"}>
-                      {completed ? "Completed" : "Pending"}
+                    <Badge 
+                      variant={completed ? "default" : "secondary"}
+                      className={completed ? "bg-green-500 hover:bg-green-600" : "border-aum-orange/20"}
+                    >
+                      {completed ? "✅ Completed" : "⏳ Pending"}
                     </Badge>
                   </div>
                 );
               })}
             </div>
             
-            <div className="mt-6 text-center">
-              <Badge className="text-lg px-4 py-2">
-                {participant?.progress.length || 0}/{locations.length} locations completed
-              </Badge>
+            <div className="mt-8 text-center">
+              <div className="p-4 bg-brand-gradient/10 rounded-lg border border-aum-orange/20">
+                <Badge className="text-xl px-6 py-3 bg-brand-gradient text-white">
+                  🎯 {participant?.progress.length || 0}/{locations.length} locations completed
+                </Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
