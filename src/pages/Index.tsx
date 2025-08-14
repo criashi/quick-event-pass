@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X, Calendar, Upload } from "lucide-react";
+import { QrCode, Users, CheckCircle, Clock, Loader2, User, LogOut, Menu, X, Calendar, Upload, MapPin } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import Dashboard from "@/components/Dashboard";
@@ -12,6 +12,7 @@ import CSVImport from "@/components/CSVImport";
 import UserProfile from "@/components/auth/UserProfile";
 import QRCodeSender from "@/components/QRCodeSender";
 import EventSetup from "@/components/EventSetup";
+import ScavengerHuntManager from "@/components/ScavengerHuntManager";
 import { useSupabaseEventData } from "@/hooks/useSupabaseEventData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -39,6 +40,7 @@ const Index = () => {
     { id: "attendees", label: "Attendees", icon: Users },
     { id: "qr-sender", label: "Send QR Codes", icon: QrCode },
     { id: "event-setup", label: "Event Setup", icon: Calendar },
+    ...(currentEvent?.scavenger_hunt_enabled ? [{ id: "scavenger-hunt", label: "Scavenger Hunt", icon: MapPin }] : []),
     { id: "settings", label: "Import Attendees", icon: Upload },
     { id: "profile", label: "Profile", icon: User },
   ];
@@ -71,6 +73,8 @@ const Index = () => {
         return <QRCodeSender attendees={attendees} onRefresh={refreshData} />;
       case "event-setup":
         return <EventSetup />;
+      case "scavenger-hunt":
+        return currentEvent ? <ScavengerHuntManager event={currentEvent} onEventUpdate={refreshData} /> : <div>No active event</div>;
       case "settings":
         return (
           <Card className="shadow-lg border-0 bg-card">
