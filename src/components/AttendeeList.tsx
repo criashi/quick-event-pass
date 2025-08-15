@@ -46,14 +46,16 @@ const AttendeeList = ({ attendees, onCheckIn, eventId, onRefresh }: AttendeeList
       {/* Filters */}
       <Card className="shadow-lg border-0">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
               <CardTitle className="text-lg md:text-xl text-gray-800">Aumovio Employee Management</CardTitle>
               <CardDescription className="text-sm">
                 Search and filter event attendees, view check-in status
               </CardDescription>
             </div>
-            <AddAttendeeDialog eventId={eventId} onAttendeeAdded={onRefresh} />
+            <div className="flex-shrink-0">
+              <AddAttendeeDialog eventId={eventId} onAttendeeAdded={onRefresh} />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
