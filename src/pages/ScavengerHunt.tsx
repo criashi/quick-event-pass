@@ -148,9 +148,18 @@ const ScavengerHuntPage: React.FC = () => {
   const handleRegistration = async () => {
     if (!name.trim() || !email.trim() || !hunt) return;
 
+    console.log('🔍 Starting registration process...');
+    console.log('📋 Registration data:', {
+      name: name.trim(),
+      email: email.trim(),
+      huntId: hunt.id,
+      huntName: hunt.name
+    });
+
     setRegistering(true);
     try {
       // Check if participant already exists
+      console.log('🔎 Checking for existing participant...');
       const { data: existingParticipant, error: fetchError } = await supabase
         .from('scavenger_participants')
         .select('*')
@@ -158,9 +167,18 @@ const ScavengerHuntPage: React.FC = () => {
         .eq('email', email)
         .single();
 
-      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+      console.log('📊 Existing participant check result:', {
+        data: existingParticipant,
+        error: fetchError
+      });
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('❌ Error checking existing participant:', fetchError);
+        throw fetchError;
+      }
 
       if (existingParticipant) {
+        console.log('👋 Found existing participant, restoring progress...');
         // Restore existing progress
         const convertedParticipant = {
           ...existingParticipant,
@@ -173,19 +191,40 @@ const ScavengerHuntPage: React.FC = () => {
           description: "Your progress has been restored.",
         });
       } else {
+        console.log('🆕 Creating new participant...');
+        
+        const insertData = {
+          scavenger_hunt_id: hunt.id,
+          name: name.trim(),
+          email: email.trim(),
+          progress: []
+        };
+        
+        console.log('📤 Insert data:', insertData);
+        
         // Create new participant
         const { data: newParticipant, error: insertError } = await supabase
           .from('scavenger_participants')
-          .insert({
-            scavenger_hunt_id: hunt.id,
-            name: name.trim(),
-            email: email.trim(),
-            progress: []
-          })
+          .insert(insertData)
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        console.log('📥 Insert result:', {
+          data: newParticipant,
+          error: insertError
+        });
+
+        if (insertError) {
+          console.error('❌ Insert error details:', {
+            message: insertError.message,
+            details: insertError.details,
+            hint: insertError.hint,
+            code: insertError.code
+          });
+          throw insertError;
+        }
+
+        console.log('✅ Successfully created participant:', newParticipant);
 
         const convertedParticipant = {
           ...newParticipant,
@@ -199,7 +238,10 @@ const ScavengerHuntPage: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Error registering participant:', error);
+      console.error('💥 Registration failed with error:', error);
+      console.error('💥 Error type:', typeof error);
+      console.error('💥 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
       toast({
         title: "Error",
         description: "Failed to register. Please try again.",
