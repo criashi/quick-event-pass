@@ -22,6 +22,9 @@ const buttonVariants = cva(
         brand: "bg-aum-orange text-primary-foreground hover:bg-aum-orange-500",
         "brand-outline": "border border-aum-orange text-aum-orange hover:bg-aum-orange hover:text-primary-foreground",
         "brand-gradient": "brand-gradient text-primary-foreground hover:opacity-90",
+        // Gradient background specific variants
+        "gradient-primary": "bg-white text-aum-orange hover:bg-aum-purple hover:text-aum-orange disabled:bg-white disabled:text-aum-gray-400",
+        "gradient-secondary": "border-[3px] border-white bg-transparent text-white hover:bg-aum-purple hover:border-white",
       },
       size: {
         default: "h-10 px-4 py-2",

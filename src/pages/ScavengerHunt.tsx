@@ -359,7 +359,8 @@ const ScavengerHuntPage: React.FC = () => {
               <Button
                 onClick={handleRegistration}
                 disabled={!name.trim() || !email.trim() || registering}
-                className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20"
+                variant="gradient-primary"
+                className="w-full"
               >
                 {registering ? (
                   <>
@@ -480,7 +481,8 @@ const ScavengerHuntPage: React.FC = () => {
                   <Button
                     onClick={handleAnswerSubmission}
                     disabled={!selectedAnswer || answering}
-                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20"
+                    variant="gradient-primary"
+                    className="w-full"
                   >
                     {answering ? (
                       <>
