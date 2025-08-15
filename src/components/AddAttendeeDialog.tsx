@@ -106,7 +106,7 @@ const AddAttendeeDialog = ({ eventId, onAttendeeAdded }: AddAttendeeDialogProps)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+        <Button variant="light-primary">
           <Plus className="h-4 w-4 mr-2" />
           Add Attendee
         </Button>
@@ -213,7 +213,7 @@ const AddAttendeeDialog = ({ eventId, onAttendeeAdded }: AddAttendeeDialogProps)
               <div className="flex gap-2 pt-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="light-secondary"
                   onClick={() => setOpen(false)}
                   className="flex-1"
                 >
@@ -221,8 +221,9 @@ const AddAttendeeDialog = ({ eventId, onAttendeeAdded }: AddAttendeeDialogProps)
                 </Button>
                 <Button
                   type="submit"
+                  variant="light-primary"
                   disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                  className="flex-1"
                 >
                   {loading ? "Adding..." : "Add Attendee"}
                 </Button>

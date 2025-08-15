@@ -161,10 +161,10 @@ const EditEventDialog = ({ event, open, onClose, onEventUpdated }: EditEventDial
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="light-secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" variant="light-primary" disabled={loading}>
               {loading ? 'Updating...' : 'Update Event'}
             </Button>
           </DialogFooter>

@@ -467,7 +467,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                     ))}
                   </div>
 
-                  <Button onClick={createScavengerHunt} className="w-full">
+                  <Button onClick={createScavengerHunt} variant="light-primary" className="w-full">
                     Create Scavenger Hunt
                   </Button>
                 </div>
@@ -488,7 +488,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                       <h3 className="text-lg font-semibold">{scavengerHunt.name}</h3>
                       <p className="text-sm text-muted-foreground">Scavenger Hunt Details</p>
                     </div>
-                    <Button onClick={loadEditForm} variant="outline">
+                    <Button onClick={loadEditForm} variant="light-secondary">
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Hunt
                     </Button>
@@ -725,12 +725,12 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button onClick={updateScavengerHunt} className="flex-1">
+              <Button onClick={updateScavengerHunt} variant="light-primary" className="flex-1">
                 Update Scavenger Hunt
               </Button>
               <Button 
                 onClick={() => setShowEditForm(false)} 
-                variant="outline"
+                variant="light-secondary"
                 className="flex-1"
               >
                 Cancel
