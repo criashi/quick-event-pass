@@ -170,10 +170,10 @@ const EventForm = ({ onClose, onEventCreated }: EventFormProps) => {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" variant="light-primary">
+              <Button type="submit" variant="brand">
                 Create Event
               </Button>
-              <Button type="button" variant="light-secondary" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
             </div>

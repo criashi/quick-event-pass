@@ -80,7 +80,7 @@ const DeleteEventDialog = ({ event, open, onClose, onEventDeleted }: DeleteEvent
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="light-secondary" onClick={handleClose}>
+          <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
           <Button 

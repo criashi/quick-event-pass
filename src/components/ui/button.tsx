@@ -18,16 +18,10 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Branded variants for light backgrounds
-        "light-primary": "bg-aum-orange text-white hover:bg-aum-purple hover:text-white disabled:bg-aum-gray-400 disabled:text-white",
-        "light-secondary": "border-[3px] border-aum-orange bg-transparent text-aum-orange hover:bg-aum-purple hover:border-aum-purple hover:text-white disabled:border-aum-gray-400 disabled:text-aum-gray-400",
-        // Legacy branded variants (keeping for backward compatibility)
+        // Branded variants
         brand: "bg-aum-orange text-primary-foreground hover:bg-aum-orange-500",
         "brand-outline": "border border-aum-orange text-aum-orange hover:bg-aum-orange hover:text-primary-foreground",
         "brand-gradient": "brand-gradient text-primary-foreground hover:opacity-90",
-        // Gradient background specific variants
-        "gradient-primary": "bg-white text-aum-orange hover:bg-aum-purple hover:text-aum-orange disabled:bg-white disabled:text-aum-gray-400",
-        "gradient-secondary": "border-[3px] border-white bg-transparent text-white hover:bg-aum-purple hover:border-white",
       },
       size: {
         default: "h-10 px-4 py-2",

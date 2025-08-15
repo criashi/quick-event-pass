@@ -371,7 +371,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      scavenger_leaderboard: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          locations_completed: number | null
+          masked_email: string | null
+          scavenger_hunt_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          display_name?: never
+          id?: string | null
+          locations_completed?: never
+          masked_email?: never
+          scavenger_hunt_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          display_name?: never
+          id?: string | null
+          locations_completed?: never
+          masked_email?: never
+          scavenger_hunt_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scavenger_participants_scavenger_hunt_id_fkey"
+            columns: ["scavenger_hunt_id"]
+            isOneToOne: false
+            referencedRelation: "scavenger_hunts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_current_user_role: {

@@ -44,22 +44,15 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
 
   const fetchScavengerHunt = async () => {
     try {
-      console.log('Fetching scavenger hunt for event:', event.id);
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
         .select('*')
         .eq('event_id', event.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .single();
 
-      if (huntError) {
-        console.error('Error fetching scavenger hunt:', huntError);
+      if (huntError && huntError.code !== 'PGRST116') {
         throw huntError;
       }
-
-      console.log('Fetched scavenger hunt data:', huntData);
 
       if (huntData) {
         setScavengerHunt(huntData);
@@ -474,7 +467,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                     ))}
                   </div>
 
-                  <Button onClick={createScavengerHunt} variant="light-primary" className="w-full">
+                  <Button onClick={createScavengerHunt} className="w-full">
                     Create Scavenger Hunt
                   </Button>
                 </div>
@@ -495,7 +488,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                       <h3 className="text-lg font-semibold">{scavengerHunt.name}</h3>
                       <p className="text-sm text-muted-foreground">Scavenger Hunt Details</p>
                     </div>
-                    <Button onClick={loadEditForm} variant="light-secondary">
+                    <Button onClick={loadEditForm} variant="outline">
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Hunt
                     </Button>
@@ -732,12 +725,12 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button onClick={updateScavengerHunt} variant="light-primary" className="flex-1">
+              <Button onClick={updateScavengerHunt} className="flex-1">
                 Update Scavenger Hunt
               </Button>
               <Button 
                 onClick={() => setShowEditForm(false)} 
-                variant="light-secondary"
+                variant="outline"
                 className="flex-1"
               >
                 Cancel

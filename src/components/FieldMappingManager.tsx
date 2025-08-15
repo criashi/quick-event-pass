@@ -178,7 +178,7 @@ const FieldMappingManager = ({ event, fieldMappings, onClose }: FieldMappingMana
                   </div>
                 </div>
 
-                <Button type="submit" variant="light-primary">
+                <Button type="submit" className="bg-continental-yellow text-continental-black hover:bg-continental-yellow/90">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Mapping
                 </Button>
@@ -187,7 +187,7 @@ const FieldMappingManager = ({ event, fieldMappings, onClose }: FieldMappingMana
           </Card>
 
           <div className="flex gap-3 pt-4">
-            <Button onClick={onClose} variant="light-secondary">
+            <Button onClick={onClose}>
               Done
             </Button>
           </div>

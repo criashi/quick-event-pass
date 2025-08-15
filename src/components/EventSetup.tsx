@@ -121,7 +121,7 @@ const EventSetup = () => {
       <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
         <Button 
           onClick={() => setShowEventForm(true)}
-          variant="light-primary"
+          variant="brand"
           className="w-full sm:w-auto"
           size="sm"
         >
@@ -131,8 +131,8 @@ const EventSetup = () => {
         {activeEvent && (
           <Button 
             onClick={() => setShowFieldMapping(true)}
-            variant="light-secondary"
-            className="w-full sm:w-auto"
+            variant="outline"
+            className="border-aum-gray-300 w-full sm:w-auto"
             size="sm"
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -181,7 +181,7 @@ const EventSetup = () => {
                     <Button
                       onClick={() => handleEditEvent(event)}
                       size="sm"
-                      variant="light-secondary"
+                      variant="outline"
                       className="text-xs h-8"
                     >
                       Edit
@@ -190,7 +190,7 @@ const EventSetup = () => {
                       <Button
                         onClick={() => handleSetActiveEvent(event.id)}
                         size="sm"
-                        variant="light-secondary"
+                        variant="outline"
                         className="text-xs h-8 whitespace-nowrap"
                       >
                         Set Active
