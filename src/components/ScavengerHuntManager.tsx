@@ -120,35 +120,6 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
     setQrCodes(codes);
   };
 
-  const toggleScavengerHunt = async (enabled: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('events')
-        .update({ scavenger_hunt_enabled: enabled })
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      onEventUpdate();
-      toast({
-        title: "Success",
-        description: `Scavenger hunt ${enabled ? 'enabled' : 'disabled'}`,
-      });
-
-      if (!enabled) {
-        setScavengerHunt(null);
-        setLocations([]);
-        setParticipants([]);
-      }
-    } catch (error) {
-      console.error('Error toggling scavenger hunt:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update scavenger hunt setting",
-        variant: "destructive",
-      });
-    }
-  };
 
   const addLocation = () => {
     setFormData(prev => ({
@@ -307,18 +278,10 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Scavenger Hunt</CardTitle>
-              <CardDescription>
-                Enable and manage a QR-based trivia experience for your event
-              </CardDescription>
-            </div>
-            <Switch
-              checked={event.scavenger_hunt_enabled || false}
-              onCheckedChange={toggleScavengerHunt}
-            />
-          </div>
+          <CardTitle>Scavenger Hunt Management</CardTitle>
+          <CardDescription>
+            Manage your QR-based trivia experience. Enable/disable scavenger hunt in Event Settings.
+          </CardDescription>
         </CardHeader>
       </Card>
 
