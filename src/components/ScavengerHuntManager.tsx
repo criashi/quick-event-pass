@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, QrCode, Download, Users, Trophy, MapPin } from 'lucide-react';
+import { Plus, Trash2, QrCode, Download, Users, Trophy, MapPin, Edit } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
@@ -27,6 +27,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
   const [participants, setParticipants] = useState<ScavengerParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [qrCodes, setQrCodes] = useState<{ [key: string]: string }>({});
   const { toast } = useToast();
 
@@ -149,6 +150,77 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
         i === index ? { ...loc, [field]: value } : loc
       )
     }));
+  };
+
+  const loadEditForm = () => {
+    if (!scavengerHunt || !locations.length) return;
+    
+    setFormData({
+      name: scavengerHunt.name,
+      locations: locations.map(loc => ({
+        name: loc.name,
+        question: loc.question,
+        options: [...loc.options],
+        correct_answer: loc.correct_answer
+      }))
+    });
+    setShowEditForm(true);
+  };
+
+  const updateScavengerHunt = async () => {
+    if (!scavengerHunt) return;
+
+    try {
+      // Update the hunt name
+      const { error: huntError } = await supabase
+        .from('scavenger_hunts')
+        .update({
+          name: formData.name,
+          total_locations: formData.locations.length
+        })
+        .eq('id', scavengerHunt.id);
+
+      if (huntError) throw huntError;
+
+      // Delete existing locations
+      const { error: deleteError } = await supabase
+        .from('scavenger_locations')
+        .delete()
+        .eq('scavenger_hunt_id', scavengerHunt.id);
+
+      if (deleteError) throw deleteError;
+
+      // Create new locations
+      const locationsToInsert = formData.locations.map((loc, index) => ({
+        scavenger_hunt_id: scavengerHunt.id,
+        name: loc.name,
+        question: loc.question,
+        options: loc.options,
+        correct_answer: loc.correct_answer,
+        location_order: index + 1
+      }));
+
+      const { error: locationsError } = await supabase
+        .from('scavenger_locations')
+        .insert(locationsToInsert);
+
+      if (locationsError) throw locationsError;
+
+      toast({
+        title: "Success",
+        description: "Scavenger hunt updated successfully!",
+      });
+
+      setShowEditForm(false);
+      await fetchScavengerHunt();
+    } catch (error) {
+      console.error('Error updating scavenger hunt:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update scavenger hunt",
+        variant: "destructive",
+      });
+    }
   };
 
   const createScavengerHunt = async () => {
@@ -410,7 +482,19 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
               </TabsList>
 
               <TabsContent value="overview">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">{scavengerHunt.name}</h3>
+                      <p className="text-sm text-muted-foreground">Scavenger Hunt Details</p>
+                    </div>
+                    <Button onClick={loadEditForm} variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Hunt
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="pt-6">
                       <div className="text-center">
@@ -440,6 +524,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                       </div>
                     </CardContent>
                   </Card>
+                </div>
                 </div>
               </TabsContent>
 
@@ -536,6 +621,124 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
           )}
         </>
       )}
+
+      {/* Edit Form Dialog */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Scavenger Hunt</DialogTitle>
+            <DialogDescription>
+              Update your scavenger hunt details, locations, and questions
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-hunt-name">Hunt Name</Label>
+              <Input
+                id="edit-hunt-name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter scavenger hunt name"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Locations & Questions</Label>
+                <Button onClick={addLocation} size="sm">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Location
+                </Button>
+              </div>
+
+              {formData.locations.map((location, index) => (
+                <Card key={index} className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">Location {index + 1}</h4>
+                      {formData.locations.length > 1 && (
+                        <Button
+                          onClick={() => removeLocation(index)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label>Location Name</Label>
+                      <Input
+                        value={location.name}
+                        onChange={(e) => updateLocation(index, 'name', e.target.value)}
+                        placeholder="e.g., Main Lobby"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Trivia Question</Label>
+                      <Textarea
+                        value={location.question}
+                        onChange={(e) => updateLocation(index, 'question', e.target.value)}
+                        placeholder="Enter your trivia question"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Answer Options</Label>
+                      {location.options.map((option, optIndex) => (
+                        <Input
+                          key={optIndex}
+                          value={option}
+                          onChange={(e) => {
+                            const newOptions = [...location.options];
+                            newOptions[optIndex] = e.target.value;
+                            updateLocation(index, 'options', newOptions);
+                          }}
+                          placeholder={`Option ${optIndex + 1}`}
+                          className="mt-1"
+                        />
+                      ))}
+                      <Button
+                        onClick={() => updateLocation(index, 'options', [...location.options, ''])}
+                        size="sm"
+                        variant="outline"
+                        className="mt-2"
+                      >
+                        Add Option
+                      </Button>
+                    </div>
+
+                    <div>
+                      <Label>Correct Answer</Label>
+                      <Input
+                        value={location.correct_answer}
+                        onChange={(e) => updateLocation(index, 'correct_answer', e.target.value)}
+                        placeholder="Enter the correct answer exactly as shown in options"
+                      />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button onClick={updateScavengerHunt} className="flex-1">
+                Update Scavenger Hunt
+              </Button>
+              <Button 
+                onClick={() => setShowEditForm(false)} 
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
