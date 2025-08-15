@@ -44,15 +44,22 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
 
   const fetchScavengerHunt = async () => {
     try {
+      console.log('Fetching scavenger hunt for event:', event.id);
       const { data: huntData, error: huntError } = await supabase
         .from('scavenger_hunts')
         .select('*')
         .eq('event_id', event.id)
-        .single();
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (huntError && huntError.code !== 'PGRST116') {
+      if (huntError) {
+        console.error('Error fetching scavenger hunt:', huntError);
         throw huntError;
       }
+
+      console.log('Fetched scavenger hunt data:', huntData);
 
       if (huntData) {
         setScavengerHunt(huntData);
