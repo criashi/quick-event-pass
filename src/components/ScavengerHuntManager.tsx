@@ -48,9 +48,10 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
         .from('scavenger_hunts')
         .select('*')
         .eq('event_id', event.id)
-        .single();
+        .eq('is_active', true)
+        .maybeSingle();
 
-      if (huntError && huntError.code !== 'PGRST116') {
+      if (huntError) {
         throw huntError;
       }
 
