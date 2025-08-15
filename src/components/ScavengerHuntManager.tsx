@@ -55,9 +55,9 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
 
       if (huntData) {
         setScavengerHunt(huntData);
-        await fetchLocations(huntData.id);
+        const locationsData = await fetchLocations(huntData.id);
         await fetchParticipants(huntData.id);
-        await generateQRCodes(huntData);
+        await generateQRCodes(huntData, locationsData);
       }
     } catch (error) {
       console.error('Error fetching scavenger hunt:', error);
@@ -86,6 +86,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
       options: Array.isArray(location.options) ? location.options.filter(opt => typeof opt === 'string') : []
     }));
     setLocations(convertedData);
+    return convertedData;
   };
 
   const fetchParticipants = async (huntId: string) => {
@@ -105,19 +106,25 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
     setParticipants(convertedData);
   };
 
-  const generateQRCodes = async (hunt: ScavengerHunt) => {
+  const generateQRCodes = async (hunt: ScavengerHunt, locationsList: ScavengerLocation[] = []) => {
     const baseUrl = window.location.origin;
     const codes: { [key: string]: string } = {};
     
-    // Generate signup QR code
-    codes.signup = `${baseUrl}/hunt/${hunt.signup_qr_token}`;
-    
-    // Generate location QR codes
-    locations.forEach(location => {
-      codes[location.id] = `${baseUrl}/hunt/location/${location.qr_token}`;
-    });
-    
-    setQrCodes(codes);
+    try {
+      // Generate signup QR code
+      const signupUrl = `${baseUrl}/hunt/${hunt.signup_qr_token}`;
+      codes.signup = await QRCodeLib.toDataURL(signupUrl, { width: 200, margin: 1 });
+      
+      // Generate location QR codes
+      for (const location of locationsList) {
+        const locationUrl = `${baseUrl}/hunt/location/${location.qr_token}`;
+        codes[location.id] = await QRCodeLib.toDataURL(locationUrl, { width: 200, margin: 1 });
+      }
+      
+      setQrCodes(codes);
+    } catch (error) {
+      console.error('Error generating QR codes:', error);
+    }
   };
 
 
@@ -488,25 +495,37 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="p-4 border rounded">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="p-4 border rounded text-center">
+                        <div className="flex items-center justify-center gap-2 mb-3">
                           <QrCode className="w-5 h-5" />
                           <span className="font-medium">Signup QR Code</span>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {qrCodes.signup}
-                        </div>
+                        {qrCodes.signup ? (
+                          <img 
+                            src={qrCodes.signup} 
+                            alt="Signup QR Code" 
+                            className="mx-auto border rounded" 
+                          />
+                        ) : (
+                          <div className="text-sm text-muted-foreground">Loading...</div>
+                        )}
                       </div>
 
                       {locations.map((location) => (
-                        <div key={location.id} className="p-4 border rounded">
-                          <div className="flex items-center gap-2 mb-2">
+                        <div key={location.id} className="p-4 border rounded text-center">
+                          <div className="flex items-center justify-center gap-2 mb-3">
                             <QrCode className="w-5 h-5" />
                             <span className="font-medium">{location.name}</span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {qrCodes[location.id]}
-                          </div>
+                          {qrCodes[location.id] ? (
+                            <img 
+                              src={qrCodes[location.id]} 
+                              alt={`${location.name} QR Code`} 
+                              className="mx-auto border rounded" 
+                            />
+                          ) : (
+                            <div className="text-sm text-muted-foreground">Loading...</div>
+                          )}
                         </div>
                       ))}
                     </div>
