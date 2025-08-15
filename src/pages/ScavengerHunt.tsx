@@ -48,7 +48,7 @@ const ScavengerHuntPage: React.FC = () => {
         .select('*')
         .eq('signup_qr_token', signupToken)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (huntError) throw huntError;
 
