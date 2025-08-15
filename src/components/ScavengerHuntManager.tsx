@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, QrCode, Download, Users, Trophy } from 'lucide-react';
+import { Plus, Trash2, QrCode, Download, Users, Trophy, MapPin } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
@@ -414,7 +414,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                   <Card>
                     <CardContent className="pt-6">
                       <div className="text-center">
-                        <Trophy className="w-8 h-8 mx-auto mb-2 text-aum-orange" />
+                        <MapPin className="w-8 h-8 mx-auto mb-2 text-aum-orange" />
                         <div className="text-2xl font-bold">{locations.length}</div>
                         <div className="text-sm text-muted-foreground">Locations</div>
                       </div>
