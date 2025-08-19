@@ -249,7 +249,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           // Send email using Resend
           const emailResponse = await resend.emails.send({
-            from: 'Continental Events <noreply@conti-event.net>',
+            from: 'Aumovio Events <noreply@events.aumovio.com>',
             to: [attendee.continental_email],
             subject: `Your QR Code for ${events.name} - ${formattedDate}`,
             html: emailHtml,
