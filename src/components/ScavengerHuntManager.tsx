@@ -7,12 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, QrCode, Download, Users, Trophy, MapPin, Edit } from 'lucide-react';
+import { Plus, Trash2, QrCode, Download, Users, Trophy, MapPin, Edit, AlertTriangle } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
 import { ScavengerHunt, ScavengerLocation, ScavengerParticipant, ScavengerHuntFormData, ScavengerLocationDB, ScavengerParticipantDB, QRCodeData } from "@/types/scavenger";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import QRCodeLib from "qrcode";
 import JSZip from "jszip";
 
@@ -28,6 +29,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   const [qrCodes, setQrCodes] = useState<{ [key: string]: string }>({});
   const { toast } = useToast();
 
@@ -268,6 +270,68 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
       toast({
         title: "Error",
         description: "Failed to create scavenger hunt",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetScavengerHunt = async () => {
+    if (!scavengerHunt) return;
+
+    try {
+      // Delete all participants
+      const { error: participantsError } = await supabase
+        .from('scavenger_participants')
+        .delete()
+        .eq('scavenger_hunt_id', scavengerHunt.id);
+
+      if (participantsError) throw participantsError;
+
+      // Delete all locations
+      const { error: locationsError } = await supabase
+        .from('scavenger_locations')
+        .delete()
+        .eq('scavenger_hunt_id', scavengerHunt.id);
+
+      if (locationsError) throw locationsError;
+
+      // Delete the scavenger hunt
+      const { error: huntError } = await supabase
+        .from('scavenger_hunts')
+        .delete()
+        .eq('id', scavengerHunt.id);
+
+      if (huntError) throw huntError;
+
+      // Update the event to disable scavenger hunt
+      const { error: eventError } = await supabase
+        .from('events')
+        .update({ scavenger_hunt_enabled: false })
+        .eq('id', event.id);
+
+      if (eventError) throw eventError;
+
+      toast({
+        title: "Success",
+        description: "Scavenger hunt has been completely reset and disabled",
+      });
+
+      setShowEditForm(false);
+      setShowResetDialog(false);
+      
+      // Reset local state
+      setScavengerHunt(null);
+      setLocations([]);
+      setParticipants([]);
+      setQrCodes({});
+      
+      // Trigger event update to refresh parent component
+      onEventUpdate();
+    } catch (error) {
+      console.error('Error resetting scavenger hunt:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset scavenger hunt",
         variant: "destructive",
       });
     }
@@ -725,7 +789,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
               ))}
             </div>
 
-            <div className="flex gap-2 pt-4">
+            <div className="flex gap-2 pt-4 border-t">
               <Button onClick={updateScavengerHunt} className="flex-1">
                 Update Scavenger Hunt
               </Button>
@@ -736,6 +800,50 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
               >
                 Cancel
               </Button>
+            </div>
+
+            <div className="pt-4 border-t">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+                <span className="font-medium text-destructive">Danger Zone</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Completely reset this scavenger hunt. This will permanently delete all participants, 
+                locations, and hunt data. This action cannot be undone.
+              </p>
+              
+              <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Reset Scavenger Hunt
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete:
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li>All {participants.length} participants and their progress</li>
+                        <li>All {locations.length} locations and questions</li>
+                        <li>The entire scavenger hunt setup</li>
+                        <li>Disable scavenger hunt for this event</li>
+                      </ul>
+                      You will need to recreate everything from scratch.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={resetScavengerHunt}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Yes, Reset Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </DialogContent>
