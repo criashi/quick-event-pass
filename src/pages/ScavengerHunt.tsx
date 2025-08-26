@@ -75,9 +75,12 @@ const ScavengerHuntPage: React.FC = () => {
           scavenger_hunts (*)
         `)
         .eq('qr_token', locToken)
-        .single();
+        .maybeSingle();
 
       if (locationError) throw locationError;
+      if (!locationData) {
+        throw new Error('Location not found');
+      }
 
       // Convert database types to frontend types
       const convertedLocation = {
@@ -132,9 +135,9 @@ const ScavengerHuntPage: React.FC = () => {
       .select('*')
       .eq('scavenger_hunt_id', huntId)
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error) throw error;
     if (data) {
       // Convert database types to frontend types
       const convertedData = {
@@ -165,14 +168,14 @@ const ScavengerHuntPage: React.FC = () => {
         .select('*')
         .eq('scavenger_hunt_id', hunt.id)
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
       console.log('📊 Existing participant check result:', {
         data: existingParticipant,
         error: fetchError
       });
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
         console.error('❌ Error checking existing participant:', fetchError);
         throw fetchError;
       }
