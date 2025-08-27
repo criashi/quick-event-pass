@@ -399,18 +399,53 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
   };
 
   const exportResults = () => {
-    const csvData = participants.map(p => ({
-      name: p.name,
-      email: p.email,
-      progress: `${p.progress.length}/${locations.length}`,
-      completed: p.completed_at ? 'Yes' : 'No',
-      completedAt: p.completed_at || 'N/A'
-    }));
+    if (!participants.length) {
+      toast({
+        title: "No Data",
+        description: "No participants to export",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    console.log('CSV Export Data:', csvData);
+    const csvHeaders = [
+      'Name',
+      'Email',
+      'Start Time',
+      'Completion Time',
+      'Status',
+      'Progress',
+      'Locations Completed'
+    ];
+
+    const csvData = participants.map(p => [
+      p.name,
+      p.email,
+      new Date(p.created_at).toLocaleString(),
+      p.completed_at ? new Date(p.completed_at).toLocaleString() : 'Not Completed',
+      p.completed_at ? 'Completed' : 'In Progress',
+      `${p.progress.length}/${locations.length}`,
+      p.progress.length.toString()
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${scavengerHunt?.name || 'scavenger-hunt'}-participants-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
     toast({
-      title: "Results Exported",
-      description: "Results data logged to console. In production, this would download a CSV file.",
+      title: "Success",
+      description: "Participant data exported successfully",
     });
   };
 
