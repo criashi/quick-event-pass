@@ -214,6 +214,7 @@ export type Database = {
       }
       scavenger_hunts: {
         Row: {
+          congratulations_message: string | null
           created_at: string
           event_id: string
           id: string
@@ -224,6 +225,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          congratulations_message?: string | null
           created_at?: string
           event_id: string
           id?: string
@@ -234,6 +236,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          congratulations_message?: string | null
           created_at?: string
           event_id?: string
           id?: string

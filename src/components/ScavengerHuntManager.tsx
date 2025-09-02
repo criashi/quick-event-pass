@@ -35,6 +35,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
 
   const [formData, setFormData] = useState<ScavengerHuntFormData>({
     name: '',
+    congratulations_message: "You've successfully completed the scavenger hunt! Your name will be entered into a drawing for an AUMOVIO cooler bag and you will be contacted by MarComm if you're one of the ten lucky winners!",
     locations: [{ name: '', question: '', options: ['', '', ''], correct_answer: '' }]
   });
 
@@ -160,6 +161,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
     
     setFormData({
       name: scavengerHunt.name,
+      congratulations_message: scavengerHunt.congratulations_message || "You've successfully completed the scavenger hunt! Your name will be entered into a drawing for an AUMOVIO cooler bag and you will be contacted by MarComm if you're one of the ten lucky winners!",
       locations: locations.map(loc => ({
         name: loc.name,
         question: loc.question,
@@ -179,6 +181,7 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
         .from('scavenger_hunts')
         .update({
           name: formData.name,
+          congratulations_message: formData.congratulations_message,
           total_locations: formData.locations.length
         })
         .eq('id', scavengerHunt.id);
@@ -228,16 +231,17 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
 
   const createScavengerHunt = async () => {
     try {
-      // Create the hunt
-      const { data: huntData, error: huntError } = await supabase
-        .from('scavenger_hunts')
-        .insert({
-          event_id: event.id,
-          name: formData.name,
-          total_locations: formData.locations.length
-        })
-        .select()
-        .single();
+       // Create the hunt
+        const { data: huntData, error: huntError } = await supabase
+          .from('scavenger_hunts')
+          .insert({
+            event_id: event.id,
+            name: formData.name,
+            congratulations_message: formData.congratulations_message,
+            total_locations: formData.locations.length
+          })
+          .select()
+          .single();
 
       if (huntError) throw huntError;
 
@@ -263,7 +267,11 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
       });
 
       setShowCreateForm(false);
-      setFormData({ name: '', locations: [{ name: '', question: '', options: ['', '', ''], correct_answer: '' }] });
+      setFormData({ 
+        name: '', 
+        congratulations_message: "You've successfully completed the scavenger hunt! Your name will be entered into a drawing for an AUMOVIO cooler bag and you will be contacted by MarComm if you're one of the ten lucky winners!", 
+        locations: [{ name: '', question: '', options: ['', '', ''], correct_answer: '' }] 
+      });
       await fetchScavengerHunt();
     } catch (error) {
       console.error('Error creating scavenger hunt:', error);
@@ -483,6 +491,17 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Enter scavenger hunt name"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="congratulations-message">Congratulations Message</Label>
+                    <Textarea
+                      id="congratulations-message"
+                      value={formData.congratulations_message}
+                      onChange={(e) => setFormData(prev => ({ ...prev, congratulations_message: e.target.value }))}
+                      placeholder="Enter the message participants will see when they complete the hunt"
+                      className="min-h-[100px]"
                     />
                   </div>
 
@@ -740,6 +759,17 @@ const ScavengerHuntManager: React.FC<ScavengerHuntManagerProps> = ({ event, onEv
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter scavenger hunt name"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-congratulations-message">Congratulations Message</Label>
+              <Textarea
+                id="edit-congratulations-message"
+                value={formData.congratulations_message}
+                onChange={(e) => setFormData(prev => ({ ...prev, congratulations_message: e.target.value }))}
+                placeholder="Enter the message participants will see when they complete the hunt"
+                className="min-h-[100px]"
               />
             </div>
 

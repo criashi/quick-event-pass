@@ -5,6 +5,7 @@ export interface ScavengerHunt {
   total_locations: number;
   signup_qr_token: string;
   is_active: boolean;
+  congratulations_message?: string;
   created_at: string;
   updated_at: string;
 }
@@ -58,6 +59,7 @@ export interface ScavengerParticipantDB {
 
 export interface ScavengerHuntFormData {
   name: string;
+  congratulations_message: string;
   locations: {
     name: string;
     question: string;
