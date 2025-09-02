@@ -440,7 +440,7 @@ const ScavengerHuntPage: React.FC = () => {
               <Trophy className="w-16 h-16 mx-auto mb-4 text-white animate-pulse" />
               <CardTitle className="text-2xl text-white">Congratulations!</CardTitle>
               <CardDescription className="text-white/90">
-                You've successfully completed the scavenger hunt!
+                You've successfully completed the scavenger hunt! Your name will be entered into a drawing for an AUMOVIO cooler bag and you will be contacted by MarComm if you're one of the ten lucky winners!
               </CardDescription>
             </CardHeader>
             <CardContent>
