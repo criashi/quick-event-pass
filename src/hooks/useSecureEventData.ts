@@ -155,6 +155,84 @@ export const useSecureEventData = () => {
     }
   };
 
+  const uncheckInAttendee = async (attendeeId: string): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to perform this action",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const attendee = attendees.find(a => a.id === attendeeId);
+      if (!attendee) {
+        toast({
+          title: "Uncheck-in Failed",
+          description: "Attendee not found",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (!attendee.checked_in) {
+        toast({
+          title: "Not Checked In",
+          description: `${attendee.full_name} is not currently checked in`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const oldValues = { checked_in: attendee.checked_in, check_in_time: attendee.check_in_time };
+      const newValues = { checked_in: false, check_in_time: null };
+
+      const { error } = await supabase
+        .from('attendees')
+        .update(newValues)
+        .eq('id', attendeeId);
+
+      if (error) {
+        console.error('Error unchecking attendee:', error);
+        await logSecurityEvent('UNCHHECKIN_ERROR', 'attendees', attendeeId, oldValues, { error: error.message });
+        toast({
+          title: "Uncheck-in Failed",
+          description: "Unable to complete uncheck-in. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Update local state
+      setAttendees(prev => 
+        prev.map(a => 
+          a.id === attendeeId 
+            ? { ...a, checked_in: false, check_in_time: null }
+            : a
+        )
+      );
+
+      await logSecurityEvent('ATTENDEE_UNCHHECKIN', 'attendees', attendeeId, oldValues, newValues);
+
+      toast({
+        title: "Uncheck-in Successful",
+        description: `${attendee.full_name} has been unchecked`,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error:', error);
+      await logSecurityEvent('UNCHHECKIN_EXCEPTION', 'attendees', attendeeId, undefined, { error: String(error) });
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const getStats = (): EventStats => {
     const total = attendees.length;
     const checkedIn = attendees.filter(a => a.checked_in).length;
@@ -167,6 +245,7 @@ export const useSecureEventData = () => {
     attendees,
     loading,
     checkInAttendee,
+    uncheckInAttendee,
     getStats,
     refreshData: fetchAttendees,
     currentEvent,

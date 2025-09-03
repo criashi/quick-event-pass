@@ -5,18 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, CheckCircle, Clock, Mail, AlertTriangle, Building } from "lucide-react";
+import { Search, Filter, CheckCircle, Clock, Mail, AlertTriangle, Building, XCircle } from "lucide-react";
 import { Attendee } from "@/types/attendee";
 import AddAttendeeDialog from "@/components/AddAttendeeDialog";
 
 interface AttendeeListProps {
   attendees: Attendee[];
   onCheckIn: (attendeeId: string) => Promise<boolean>;
+  onUncheckIn: (attendeeId: string) => Promise<boolean>;
   eventId?: string;
   onRefresh: () => void;
 }
 
-const AttendeeList = ({ attendees, onCheckIn, eventId, onRefresh }: AttendeeListProps) => {
+const AttendeeList = ({ attendees, onCheckIn, onUncheckIn, eventId, onRefresh }: AttendeeListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterBusinessArea, setFilterBusinessArea] = useState("all");
@@ -189,10 +190,14 @@ const AttendeeList = ({ attendees, onCheckIn, eventId, onRefresh }: AttendeeList
                       Check In
                     </Button>
                   ) : (
-                    <div className="text-center text-green-600">
-                      <CheckCircle className="h-6 w-6 mx-auto mb-1" />
-                      <p className="text-xs font-medium">Checked In</p>
-                    </div>
+                    <Button
+                      onClick={() => onUncheckIn(attendee.id)}
+                      variant="outline"
+                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Uncheck-in
+                    </Button>
                   )}
                 </div>
               </div>

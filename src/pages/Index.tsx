@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
-  const { attendees, loading, checkInAttendee, getStats, refreshData, currentEvent } = useSupabaseEventData();
+  const { attendees, loading, checkInAttendee, uncheckInAttendee, getStats, refreshData, currentEvent } = useSupabaseEventData();
   const { user, profile, signOut } = useAuth();
   const isMobile = useIsMobile();
   const stats = getStats();
@@ -68,7 +68,7 @@ const Index = () => {
       case "scanner":
         return <QRScanner onCheckIn={handleCheckIn} attendees={attendees} />;
       case "attendees":
-        return <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} eventId={currentEvent?.id} onRefresh={refreshData} />;
+        return <AttendeeList attendees={attendees} onCheckIn={checkInAttendee} onUncheckIn={uncheckInAttendee} eventId={currentEvent?.id} onRefresh={refreshData} />;
       case "qr-sender":
         return <QRCodeSender attendees={attendees} onRefresh={refreshData} />;
       case "event-setup":

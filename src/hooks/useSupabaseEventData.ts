@@ -109,6 +109,62 @@ export const useSupabaseEventData = () => {
     }
   };
 
+  const uncheckInAttendee = async (attendeeId: string): Promise<boolean> => {
+    try {
+      const attendee = attendees.find(a => a.id === attendeeId);
+      if (!attendee || !attendee.checked_in) {
+        toast({
+          title: "Uncheck-in Failed",
+          description: attendee?.checked_in === false ? "Attendee is not checked in" : "Attendee not found",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('attendees')
+        .update({ 
+          checked_in: false, 
+          check_in_time: null 
+        })
+        .eq('id', attendeeId);
+
+      if (error) {
+        console.error('Error unchecking attendee:', error);
+        toast({
+          title: "Uncheck-in Failed",
+          description: "Failed to update check-in status",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Update local state
+      setAttendees(prev => 
+        prev.map(a => 
+          a.id === attendeeId 
+            ? { ...a, checked_in: false, check_in_time: null }
+            : a
+        )
+      );
+
+      toast({
+        title: "Uncheck-in Successful",
+        description: `${attendee.full_name} has been unchecked`,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to uncheck attendee",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const getStats = (): EventStats => {
     const total = attendees.length;
     const checkedIn = attendees.filter(a => a.checked_in).length;
@@ -121,6 +177,7 @@ export const useSupabaseEventData = () => {
     attendees,
     loading,
     checkInAttendee,
+    uncheckInAttendee,
     getStats,
     refreshData: fetchAttendees,
     currentEvent
