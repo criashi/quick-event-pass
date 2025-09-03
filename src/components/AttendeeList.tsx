@@ -155,12 +155,6 @@ const AttendeeList = ({ attendees, onCheckIn, onUncheckIn, eventId, onRefresh }:
                       <span className="font-medium text-gray-700">Business Area:</span>
                       <p className="text-gray-600 text-xs">{attendee.business_area || 'Not specified'}</p>
                     </div>
-                    <div>
-                      <span className="font-medium text-gray-700">Registration:</span>
-                      <p className="text-gray-600 text-xs">
-                        {attendee.start_time ? new Date(attendee.start_time).toLocaleDateString() : 'N/A'}
-                      </p>
-                    </div>
                     {attendee.checked_in && attendee.check_in_time && (
                       <div>
                         <span className="font-medium text-gray-700">Check-in Time:</span>
